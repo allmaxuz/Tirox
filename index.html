@@ -52,7 +52,7 @@ pre{white-space:pre-wrap;font-family:inherit;margin:0;font-size:14px;line-height
 </style>
 </head>
 <body>
-<header><div class="bosh"><b>TIROX</b><small id="kim">ALLMAX FIX PRICE</small></div><button onclick="och('qollanma')">❔</button><button onclick="yangila()">⟳</button></header>
+<header><div class="bosh"><b>TIROX</b><small id="kim">ALLMAX FIX PRICE</small></div><button onclick="och('qollanma')" style="font-size:13px;font-weight:700">📖 Qo'llanma</button><button onclick="yangila()">⟳</button></header>
 <main id="m"><div class="yuk">Yuklanmoqda…</div></main>
 <div class="xabar" id="xabar"></div>
 <nav id="nav"></nav>
@@ -349,23 +349,91 @@ function pushYubor() {
   if (tg && tg.showConfirm) tg.showConfirm(s1, qadam); else qadam(confirm(s1));
 }
 
-// ---------- CASHBACK (hozircha faqat ko'rish) ----------
+// ---------- CASHBACK: ko'rish va o'zgartirish ----------
 var KUN = ['Yak', 'Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan'];
-function cashback() { qoy('<div class="yuk">Yuklanmoqda…</div>'); var f = function (d, v) { cashbackChiz(d, v); }; f.bol = 'cashback'; ol('cashback', {}, f); }
-function cashbackChiz(d, v) {
-  var R = d.ranges || [], H = d.happy || [];
-  var h = vaqt(v) + '<div class="karta"><div style="font-size:18px;font-weight:800">' + e(d.nom || 'Karta shabloni') + '</div><div class="kichik">Shablon ' + e(d.id) + ' · turi: ' + e(d.tur || '—') + '</div></div>' +
-    '<h3>Cashback darajalari</h3><div class="karta">' + (R.length ? R.map(function (r) {
-      return '<div class="qator"><span><b>' + e(r.name || '—') + '</b><div class="kichik">' + (Number(r.threshold) ? son(r.threshold) + ' so\'mdan' : 'boshlang\'ich daraja') + '</div></span><span style="font-size:20px;color:var(--y)">' + e(r.cashbackPercent == null ? '—' : r.cashbackPercent) + '%</span></div>'; }).join('') : '<div class="kichik">Daraja topilmadi</div>') + '</div>' +
-    '<h3>Happy hours (vaqt bo\'yicha)</h3><div class="karta">' + (H.length ? H.map(function (x) {
-      var kn = (x.daysOfWeek && x.daysOfWeek.length && x.daysOfWeek.length < 7) ? x.daysOfWeek.map(function (k) { return KUN[k]; }).join(', ') : 'Har kuni';
-      var m = Number(x.multiplier) || 0;
-      var nat = R.length && m ? '<div class="kichik">Shu vaqtda: ' + R.map(function (r) { return e(r.name || '') + ' ' + (Math.round((Number(r.cashbackPercent) || 0) * m * 100) / 100) + '%'; }).join(' · ') + '</div>' : '';
-      return '<div class="qator"><span><b>' + e(x.from || '') + ' – ' + e(x.till || '') + '</b><div class="kichik">' + e(kn) + '</div></span><span>× ' + e(x.multiplier) + '</span></div>' + nat; }).join('') : '<div class="kichik">Happy hours yo\'q</div>') + '</div>' +
-    '<div class="oq" style="text-align:center">Hozircha faqat ko\'rish. «× 1.5» — shu vaqtda cashback 1.5 baravar bo\'ladi. O\'zgartirish keyingi bosqichda.</div>' +
-    '<details class="karta"><summary><b>Tirox\'dan kelgan hamma sozlama</b></summary>' + jadval(d.hammasi) + '</details>';
+var CB = { d: null, v: 0, hap: [], f: {}, rj: { a: '', b: '', f: {} } };
+function tasdiq(s, fn) { if (tg && tg.showConfirm) tg.showConfirm(s, function (h) { if (h) fn(); }); else if (confirm(s)) fn(); }
+function cashback() {
+  qoy('<div class="yuk">Yuklanmoqda…</div>');
+  var f = function (d, v) { cbOl(d, v); }; f.bol = 'cashback'; ol('cashback', {}, f);
+}
+function cbOl(d, v) {
+  CB.d = d; CB.v = v; CB.f = {};
+  CB.hap = (d.happy || []).map(function (x) { return { daysOfWeek: (x.daysOfWeek || []).slice(), from: x.from, till: x.till, multiplier: Number(x.multiplier) }; });
+  cashbackChiz();
+}
+function cbEf(r, m) { return Math.round((Number(r.cashbackPercent) || 0) * m * 100) / 100; }
+function cashbackChiz() {
+  var d = CB.d, R = d.ranges || [], yoz = bor('cashbackYoz'), h = vaqt(CB.v);
+  h += '<div class="karta"><div style="font-size:18px;font-weight:800">' + e(d.nom || 'Karta shabloni') + '</div><div class="kichik">Shablon ' + e(d.id) + ' · turi: ' + e(d.tur || '—') + '</div></div>';
+  // 1) darajalar
+  h += '<h3>Cashback darajalari</h3><div class="karta">' + (R.length ? R.map(function (r) {
+    var val = CB.f[r.id] != null ? CB.f[r.id] : r.cashbackPercent;
+    return '<div class="qator" style="align-items:center"><span><b>' + e(r.name || '—') + '</b><div class="kichik">' + (Number(r.threshold) ? son(r.threshold) + ' so\'mdan' : 'boshlang\'ich daraja') + '</div></span>' +
+      (yoz ? '<span style="display:flex;align-items:center;gap:4px"><input type="number" inputmode="decimal" step="0.01" min="0" max="100" value="' + e(val) + '" style="width:90px;margin:0;text-align:right;font-size:18px" oninput="CB.f[' + e(r.id) + ']=this.value"><b>%</b></span>' : '<span style="font-size:20px;color:var(--y)">' + e(r.cashbackPercent) + '%</span>') + '</div>'; }).join('') : '<div class="kichik">Daraja topilmadi</div>') +
+    (yoz && R.length ? '<button class="a" style="width:100%;margin-top:8px" onclick="cbFoizSaqla()">💾 Foizni saqlash</button><div class="kichik" style="margin-top:6px">Saqlangach Tirox\'dagi cashback darhol o\'zgaradi (yangi operatsiyalarga).</div>' : '') + '</div>';
+  // 2) happy hours
+  var yagona = R.length === 1 && Number(R[0].cashbackPercent) > 0;
+  h += '<h3>Happy hours (vaqt bo\'yicha)</h3>' + (CB.hap.length ? CB.hap.map(function (x, i) {
+    var kn = (x.daysOfWeek && x.daysOfWeek.length) ? x.daysOfWeek : [];
+    var nat = R.length && x.multiplier ? '<div class="kichik">Shu vaqtda: ' + R.map(function (r) { return e(r.name || '') + ' ' + cbEf(r, x.multiplier) + '%'; }).join(' · ') + '</div>' : '';
+    if (!yoz) return '<div class="karta"><div class="qator" style="border:0"><span><b>' + e(x.from) + ' – ' + e(x.till) + '</b><div class="kichik">' + (kn.length ? kn.map(function (k) { return KUN[k]; }).join(', ') : 'Har kuni') + '</div></span><span>× ' + e(x.multiplier) + '</span></div>' + nat + '</div>';
+    return '<div class="karta" style="padding:10px 12px"><div style="display:flex;gap:8px"><div style="flex:1"><div class="kichik">Dan</div><input type="time" value="' + e(x.from) + '" onchange="hapIn(' + i + ',\'from\',this.value)"></div><div style="flex:1"><div class="kichik">Gacha</div><input type="time" value="' + e(x.till) + '" onchange="hapIn(' + i + ',\'till\',this.value)"></div></div>' +
+      '<div class="tabs" style="margin-bottom:6px">' + KUN.map(function (n, k) { var on = !kn.length || kn.indexOf(k) >= 0; return '<button style="padding:6px 10px;' + (on ? 'background:#166534;color:#fff' : 'background:#F3F4F6;color:#374151') + '" onclick="hapKun(' + i + ',' + k + ')">' + n + '</button>'; }).join('') + '</div>' +
+      (yagona ? '<div class="kichik">Shu vaqtda cashback, %</div><input type="number" inputmode="decimal" step="0.01" min="0" value="' + e(cbEf(R[0], x.multiplier)) + '" onchange="hapFoiz(' + i + ',this.value)">'
+        : '<div class="kichik">Ko\'paytirgich (×). Masalan 1.5 — cashback 1.5 baravar</div><input type="number" inputmode="decimal" step="0.01" min="0" value="' + e(x.multiplier) + '" onchange="hapIn(' + i + ',\'multiplier\',this.value)">') +
+      nat + '<button class="x" onclick="hapOchir(' + i + ')">🗑 O\'chirish</button></div>'; }).join('') : '<div class="karta kichik">Happy hours yo\'q</div>') +
+    (yoz ? '<div class="karta"><button class="o" onclick="hapQosh()">＋ Vaqt qo\'shish</button> <button class="a" onclick="cbHapSaqla()">💾 Happy hours\'ni saqlash</button><div class="kichik" style="margin-top:6px">Soat Toshkent vaqti bilan. «22:00 – 06:00» kabi kechadan ertalabgacha ham bo\'ladi. Asosiy foiz o\'zgarsa, shu vaqtdagi foiz ham unga qarab o\'zgaradi (× saqlanadi).</div></div>' : '');
+  // 3) sanadan sanagacha
+  if (yoz) {
+    h += '<h3>Sanadan sanagacha o\'zgartirish</h3><div class="karta"><div style="display:flex;gap:8px"><div style="flex:1"><div class="kichik">Qaysi sanadan</div><input type="date" min="' + tk(0) + '" value="' + e(CB.rj.a) + '" onchange="CB.rj.a=this.value"></div><div style="flex:1"><div class="kichik">Qaysi sanagacha (shu kun ham)</div><input type="date" min="' + tk(0) + '" value="' + e(CB.rj.b) + '" onchange="CB.rj.b=this.value"></div></div>' +
+      R.map(function (r) { return '<div class="qator" style="align-items:center"><span>' + e(r.name) + ' <span class="kichik">(hozir ' + e(r.cashbackPercent) + '%)</span></span><span style="display:flex;align-items:center;gap:4px"><input type="number" inputmode="decimal" step="0.01" min="0" max="100" placeholder="—" value="' + e(CB.rj.f[r.id] != null ? CB.rj.f[r.id] : '') + '" style="width:80px;margin:0;text-align:right" oninput="CB.rj.f[' + e(r.id) + ']=this.value"><b>%</b></span></div>'; }).join('') +
+      '<button class="a" style="width:100%;margin-top:8px" onclick="cbReja()">📅 Rejalashtirish</button><div class="kichik" style="margin-top:6px">Muddat tugagach foiz o\'zi avvalgisiga qaytadi (kunning 00:00 dan keyin, 10 daqiqa ichida). Bo\'sh qoldirilgan daraja o\'zgarmaydi.</div></div>';
+  }
+  var rj = d.reja || [];
+  if (rj.length) h += '<h3>Rejalar</h3>' + rj.map(function (x) {
+    var nom = { kutadi: '⏳ Kutmoqda', faol: '✅ Hozir ishlayapti', xato: '⛔ Xato', 'faol-xato': '⛔ Qaytarilmadi' }[x.holat] || x.holat;
+    var fz = R.map(function (r) { return x.foiz[r.id] != null ? e(r.name) + ' ' + e(x.foiz[r.id]) + '%' : ''; }).filter(Boolean).join(', ');
+    return '<div class="karta"><b>' + sanaUz(x.a) + ' – ' + sanaUz(x.b) + '</b> · ' + nom + '<div class="kichik">' + fz + ' · ' + e(x.kim) + '</div>' + (yoz ? '<button class="x" onclick="cbRejaOchir(\'' + e(x.id) + '\')">Bekor qilish' + (x.holat === 'faol' ? ' (foiz avvalgisiga qaytadi)' : '') + '</button>' : '') + '</div>'; }).join('');
+  var tr = d.tarix || [];
+  if (tr.length) h += '<h3>So\'nggi o\'zgarishlar</h3><div class="karta">' + tr.slice(0, 5).map(function (x) { return '<div style="padding:6px 0;border-bottom:1px solid var(--ch)"><div class="kichik">' + e(x.vaqt) + ' · ' + e(x.kim) + '</div>' + e(x.nima) + '</div>'; }).join('') +
+    (yoz && tr.some(function (x) { return x.qaytsa; }) ? '<button class="x" style="margin-top:8px" onclick="cbQayt()">↩️ Oxirgi o\'zgarishni qaytarish</button>' : '') + '</div>';
+  if (!yoz) h += '<div class="oq" style="text-align:center">O\'zgartirish faqat ega uchun.</div>';
+  h += '<details class="karta"><summary><b>Tirox\'dan kelgan hamma sozlama</b></summary>' + jadval(d.hammasi) + '</details>';
   qoy(h);
 }
+function hapIn(i, k, v) { CB.hap[i][k] = k === 'multiplier' ? Number(String(v).replace(',', '.')) : v; cashbackChiz(); }
+function hapFoiz(i, v) { var b = Number(CB.d.ranges[0].cashbackPercent) || 1; CB.hap[i].multiplier = Math.round(Number(String(v).replace(',', '.')) / b * 10000) / 10000; cashbackChiz(); }
+function hapKun(i, k) {
+  var a = CB.hap[i].daysOfWeek; if (!a.length) a = [0, 1, 2, 3, 4, 5, 6];
+  var j = a.indexOf(k); if (j >= 0) a.splice(j, 1); else a.push(k);
+  if (!a.length) { xabar('Kamida bitta kun qolsin'); a = [k]; }
+  CB.hap[i].daysOfWeek = a.length === 7 ? [] : a.sort(); cashbackChiz();
+}
+function hapQosh() { CB.hap.push({ daysOfWeek: [], from: '00:00', till: '08:00', multiplier: 1.1 }); cashbackChiz(); }
+function hapOchir(i) { CB.hap.splice(i, 1); cashbackChiz(); }
+function cbYubor(amal, p, savol) {
+  tasdiq(savol, function () {
+    xabar('⏳ Tirox\'ga yuborilmoqda…');
+    api(amal, p).then(function (r) { xabar('✅ ' + r.matn); try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf('tx_cashback') === 0) localStorage.removeItem(k); }); } catch (z) {} CB.rj = { a: '', b: '', f: {} }; cbOl(r.hozir, Date.now()); }).catch(function (z) { xabar('⛔ ' + z.message); });
+  });
+}
+function cbFoizSaqla() {
+  var R = CB.d.ranges, f = [], tav = [];
+  R.forEach(function (r) { var v = CB.f[r.id] != null ? String(CB.f[r.id]).replace(',', '.') : String(r.cashbackPercent); if (Number(v) !== Number(r.cashbackPercent)) { f.push({ id: r.id, p: v }); tav.push(r.name + ': ' + r.cashbackPercent + '% → ' + Number(v) + '%'); } });
+  if (!f.length) return xabar('Foiz o\'zgarmagan');
+  cbYubor('cashbackSaqla', { foiz: f }, 'Cashback o\'zgartirilsinmi?\n\n' + tav.join('\n') + '\n\nDarhol kuchga kiradi.');
+}
+function cbHapSaqla() { cbYubor('cashbackSaqla', { happy: CB.hap }, 'Happy hours saqlansinmi?\n\n' + (CB.hap.map(function (x) { return x.from + '–' + x.till + ' ×' + x.multiplier; }).join('\n') || 'Hammasi o\'chiriladi') + '\n\nDarhol kuchga kiradi.'); }
+function cbReja() {
+  var R = CB.d.ranges, f = [], tav = [];
+  if (!CB.rj.a || !CB.rj.b) return xabar('Ikkala sanani tanlang');
+  R.forEach(function (r) { var v = CB.rj.f[r.id]; if (v !== undefined && v !== '') { f.push({ id: r.id, p: String(v).replace(',', '.') }); tav.push(r.name + ': ' + r.cashbackPercent + '% → ' + Number(String(v).replace(',', '.')) + '%'); } });
+  if (!f.length) return xabar('Foizni yozing');
+  cbYubor('cashbackReja', { a: CB.rj.a, b: CB.rj.b, foiz: f }, sanaUz(CB.rj.a) + ' – ' + sanaUz(CB.rj.b) + ' oralig\'ida:\n\n' + tav.join('\n') + '\n\nMuddat tugagach o\'zi qaytadi. Rejalashtirilsinmi?');
+}
+function cbRejaOchir(id) { cbYubor('cashbackRejaOchir', { id: id }, 'Reja bekor qilinsinmi?'); }
+function cbQayt() { cbYubor('cashbackQayt', {}, 'Oxirgi o\'zgarish qaytarilsinmi? Cashback avvalgi holatiga o\'tadi.'); }
 
 // ---------- ODAMLAR ----------
 var RN = { ega: '👑 Ega', rahbar: '🏛 Rahbariyat', admin: '👤 Admin', xodim: '🧑‍💼 Xodim' };
@@ -390,24 +458,26 @@ function odam(id, amal) {
 }
 
 // ---------- QO'LLANMA ----------
+var QL = [
+  ['🚀 Boshlash: ilova qanday ochiladi', 'Ilova — botda yozish maydonining <b>chap tomonidagi «Ilova»</b> tugmasi. Bosing, shu oyna ochiladi.\nPastdagi bo\'limlar: 📊 Hisobot · 🛡 Nazorat · 📞 Qo\'ng\'iroq · 🔍 Mijoz · 💰 Cashback · 📣 Push · 👥 Odamlar. Sizga ruxsat berilmagan bo\'limlar ko\'rinmaydi.\nBotdagi ▦ belgisi (klaviatura yonida) — tezkor tugmalar: Hisobot, Push, Mijoz va h.k. Botda /start — qaytadan boshlash.\nEng yuqoridagi <b>⟳</b> — saqlangan eski raqamlarni o\'chirib, yangisini oladi. <b>📖 Qo\'llanma</b> — shu sahifa.'],
+  ['📅 Kunlik ish tartibi (tavsiya)', '<b>Ertalab (5 daqiqa):</b>\n1. 🛡 Nazorat → «Tizim holati» OK bo\'lsa — hammasi joyida. DIQQAT/XATO bo\'lsa — pastdagi «Nima buzilsa» bo\'limiga qarang.\n2. 📊 Hisobot → «Kecha»: savdo, cheklar, o\'rtacha chek, bonus. ▲ yashil — avvalgidan yaxshi, ▼ qizil — yomon.\n<b>Kun davomida:</b> 📊 Hisobot → «Bugun» (har 5 daqiqada yangilanadi, «Hozir yangilash» — darhol).\n<b>Haftada bir:</b> 🛡 Nazorat → kassirlar jadvali (🟥 qaytarish, 🟨 katta chek/qo\'lda amal), 📞 qo\'ng\'iroq natijalari, 💰 Cashback holati.'],
+  ['📊 Hisobot', 'Tepada davr tugmalari: <b>Bugun, Kecha, 7 kun, 4 hafta, 6 oy, 12 oy, Oy boshidan, Davr…</b>\n«Davr…» — xohlagan sanadan sanagacha (ikkita sana tanlab «Ko\'rsatish»).\nPanellar: yalpi daromad, cheklar, o\'rtacha chek, mijozlar, yangi/qayta kelganlar, LTV (mijozning umr bo\'yi daromadi) va ROI (1 so\'m xarajatga qancha qaytishi) — ikkalasi Tirox hisobidan.\nGrafik: bitta kun tanlansa — soatlar bo\'yicha, ko\'p kun bo\'lsa — kunlar (juda uzun bo\'lsa haftalar) bo\'yicha. Ustunni bossangiz aniq summa chiqadi. Tepadagi tugmalar bilan Savdo / Cheklar / Bonus ko\'rinishini almashtirasiz.\n«—» belgisi: bu raqam kun yopilgandan keyin (ertasi 07:00 da) hisoblanadi (masalan qo\'lda bonus, qaytarish, yangi kartalar).\n▲▼ foiz — oldingi shunday uzunlikdagi davrga nisbatan.'],
+  ['🛡 Nazorat', '<b>Tizim holati</b> — tizim har kuni 07:05 da o\'zini tekshiradi: OK = joyida, DIQQAT = qarab qo\'ying, XATO = tuzatish kerak.\n<b>Xato va kamchiliklar</b> — oxirgi 30 kun.\n<b>Kassirlar</b> — kim nechta chek, savdo, bonus, qaytarish qilgani. 🟥 qaytarish ko\'p, 🟨 katta chek yoki qo\'lda amal — shuni so\'rab ko\'ring.\n<b>Tuzatish tugmalari</b> (admin va ega) — pastdagi «Nima buzilsa» bo\'limida qaysi biri qachon kerakligi yozilgan.'],
+  ['🔍 Mijoz', 'Hamma mijozlar Tirox\'dagidek ro\'yxat: yangisi tepada, 30 tadan; pastda «Yana ko\'rsatish». Qidirish: telefondan kamida 3 raqam yoki ismdan kamida 2 harf.\nMijozni bossangiz karta ochiladi: balans, karta raqami va holati, ro\'yxatdan o\'tgan sana, kuyadigan bonus, push, qo\'ng\'iroq natijasi, tarix (nima olgan/sarflagan), Tirox\'dagi barcha ma\'lumot.\n<b>Bonus qo\'shish/ayirish</b> (faqat ega): shu karta ichida miqdor va sababini yozing → tasdiqlang. Sabab majburiy, hammasi jurnalga yoziladi.'],
+  ['💰 Cashback: foizni o\'zgartirish (faqat ega)', 'Bo\'limda Tirox\'dagi hozirgi foiz va happy hours ko\'rinadi.\n<b>1) Doimiy foiz:</b> daraja yonidagi qutiga yangi foizni yozing (masalan 1,5) → «💾 Foizni saqlash» → tasdiqlang. Darhol kuchga kiradi.\n<b>2) Soat bo\'yicha (happy hours):</b> «＋ Vaqt qo\'shish» → dan/gacha soat, qaysi kunlar, shu vaqtdagi foiz → «💾 Happy hours\'ni saqlash». Masalan kechasi 00:00–08:00 da 1,1% bo\'lsin desangiz — soatni yozing, «shu vaqtda cashback» ga 1,1 yozing. (Tirox buni ko\'paytirgich × sifatida saqlaydi; bitta daraja bo\'lsa o\'zim hisoblab beraman. Asosiy foiz keyin o\'zgarsa, shu vaqtdagi foiz ham shunga qarab o\'zgaradi.)\n<b>3) Sanadan sanagacha:</b> ikkala sanani tanlang, daraja uchun yangi foizni yozing → «📅 Rejalashtirish». Boshlanish kuni foiz o\'zi o\'zgaradi, tugagach (oxirgi kundan keyin, 00:00 dan so\'ng 10 daqiqa ichida) o\'zi avvalgisiga qaytadi. «Rejalar» ro\'yxatidan bekor qilsa ham bo\'ladi — ishlab turgan bo\'lsa foiz avvalgisiga qaytariladi.\n<b>Xato qilib qo\'ysangiz:</b> «↩️ Oxirgi o\'zgarishni qaytarish».\nHar o\'zgarish: oldin tasdiq so\'raladi, Jurnalga yoziladi, egalarga botda xabar keladi. Avval nima bo\'lganini «So\'nggi o\'zgarishlar» ko\'rsatadi.'],
+  ['📣 Push', '<b>Ro\'yxat:</b> Tirox va CM bazadan ketgan hamma push (matni, qachon, holati, nechta ketdi/yetdi).\n<b>Yuborish</b> (faqat ega): matn yozing (400 belgigacha) → «Bitta mijozga» (qidirib tanlang) yoki «Hammaga». «Keyinroq yuborish» belgilansa, sana-vaqtni tanlaysiz.\n⚠️ «Hammaga» — barcha karta egalariga ketadi va qaytarib bo\'lmaydi: ikki marta tasdiq so\'raladi, ketgandan keyin 2 daqiqa takror yuborib bo\'lmaydi. Birinchi marta avval <b>o\'zingizga</b> (bitta mijoz) yuborib ko\'ring.\n<b>Avto push:</b> bonusi kuyadigan mijozlarga har kuni 11:50 da o\'zi ketadi (CM baza). Uni yoqish/o\'chirish botdagi 🔔 Push tugmasida.'],
+  ['📞 Qo\'ng\'iroq', 'CM bazadagi qo\'ng\'iroq natijalari: gaplashildi, kelaman dedi, kelmayman dedi va h.k. — kecha / 7 kun / 30 kun bo\'yicha, har xodim nechta qo\'ng\'iroq qilgani.'],
+  ['👥 Odamlar va rollar', 'Yangi odam botni ochib /start bosadi → so\'rovi «Odamlar» da chiqadi → rolni tanlaysiz. Rolni o\'zgartirish yoki o\'chirish ham shu yerda.\n👑 <b>Ega</b> — hammasi (bonus ±, cashback, push yuborish, odamlar).\n🏛 <b>Rahbariyat</b> — hamma hisobotni ko\'radi, o\'zgartirmaydi.\n👤 <b>Admin</b> — ko\'radi, tizimni tuzatadi, xodim qo\'shadi.\n🧑‍💼 <b>Xodim</b> — faqat mijoz qidirish.'],
+  ['⏱ Fonda nima ishlaydi', '• Har 5 daqiqada (08:00–23:00) — «Bugun» raqamlari yangilanadi.\n• Har 10 daqiqada — reja tekshiriladi (cashback rejalari ham shu yerda).\n• Har soatda — hisobotlar oldindan tayyorlanadi (ilova tez ochiladi).\n• Har kuni 07:00 — Tirox\'dan kecha ma\'lumoti yoziladi, bonus hisoblanadi; 07:05 — tizim o\'zini tekshiradi.\n• Har kuni 11:50 — avto push (yoqilgan bo\'lsa).\nNimadir xato bo\'lsa — bot egaga o\'zi yozadi.'],
+  ['🛠 Nima buzilsa — tezkor jadval', '<b>«Bu ilova faqat Telegram ichida ishlaydi»</b> → ilovani botdagi «Ilova» tugmasidan oching (havoladan emas). Ochilmasa botda /start bosing.\n<b>«Ruxsat yo\'q» / «Bu bo\'lim sizga yopiq»</b> → ega sizni 👥 Odamlar bo\'limida qo\'shishi yoki rolingizni o\'zgartirishi kerak.\n<b>Raqamlar eski ko\'rinadi</b> → tepadagi ⟳ ni bosing; «Bugun»da «Hozir yangilash». O\'zgarmasa: 🛡 Nazorat → «📊 Hisobotlarni yangilash».\n<b>«Bugun» to\'xtab qolgan (oxirgi operatsiya soati eski)</b> → 08:00–23:00 dan tashqarida yangilanmaydi. Kunduz bo\'lsa: Nazorat → «⏰ Rejani yoqish». Yordam bermasa: Apps Script → Триггеры (Soat belgisi) ichida <i>tiroxBugunReja</i> va <i>tiroxReja</i> bormi qarang.\n<b>Hisobotda «—» yoki «Ma\'lumot ertaga chiqadi»</b> → normal: bu raqamlar kun yopilgach (07:00) hisoblanadi.\n<b>LTV/ROI «—»</b> → Tirox bu davr uchun hisob bermagan. Boshqa davrni tanlab ko\'ring.\n<b>Mijoz kartasi topilmadi</b> → Tirox\'da karta o\'chirilgan (deleted) yoki mijoz hali kartani o\'rnatmagan. Mijoz kartasida «Kartalar» bo\'limiga qarang.\n<b>Bonus qo\'shilmadi/ayirilmadi</b> → miqdor 0 dan katta va balansdan oshmasin, sabab yozilgan bo\'lsin. Xato matnini o\'qing (u Tirox javobi).\n<b>Bonus hisobi Tirox balansiga mos kelmaydi (Nazoratda XATO)</b> → Nazorat → «🔁 Bonusni qayta». Keyin yana tekshiring.\n<b>Kunlik raqamlar noto\'g\'ri/yo\'q</b> → Nazorat → «🔁 Kunlikni qayta yozish».\n<b>Push ketmadi</b> → 📣 Push → Tirox ro\'yxatida holatiga qarang; mijozning kartasi o\'chirilgan bo\'lishi mumkin; matn 400 belgidan oshmasin.\n<b>Cashback saqlanmadi: «ruxsat bermadi (403)»</b> → Tirox API kalitida shablonni o\'zgartirish huquqi yo\'q. Tirox panelida (my.tirox.app) yangi kalit yarating va Apps Script → Настройки проекта → Свойства скрипта → <i>TIROX_API_KEY</i> ga qo\'ying.\n<b>Cashback noto\'g\'ri o\'zgardi</b> → 💰 Cashback → «↩️ Oxirgi o\'zgarishni qaytarish». Ishonch hosil qilish uchun Tirox panelida ham qarang.\n<b>Reja ishlamadi</b> → Cashback → «Rejalar»da holat «Xato» bo\'lsa, bekor qilib qayta rejalang; ega botda xabar oladi. Jurnal varag\'ida ham yozuv bor.\n<b>Kod yangilangan, lekin o\'zgarish ko\'rinmaydi</b> → Apps Script → «Управление развертываниями» → ✏️ → «Новая версия» → «Развернуть». Telegram ilovasini yoping-oching.\n<b>Bot umuman javob bermaydi</b> → Google Jadvalda yuqoridagi «Tirox» menyusi → «Telegram botni ulash» ni bosing; Apps Script → Настройки проекта → Свойства скрипта\'da TELEGRAM_TOKEN borligini tekshiring.\n<b>«Quota / limit» xatosi</b> → Apps Script kuniga trigger vaqtini cheklaydi (odatiy hisobda ~90 daqiqa). Apps Script → «Выполнения»da qaysi funksiya ko\'p vaqt olayotganini ko\'ring.'],
+  ['🧰 Tuzatish tugmalari: qaysi biri qachon', '🔧 <b>Tekshirib tuzatish</b> — birinchi shuni bosing, tizim o\'zi muammoni topib tuzatadi.\n⏰ <b>Rejani yoqish</b> — fon ishlari to\'xtab qolgan (hisobot yangilanmayapti) bo\'lsa.\n📊 <b>Hisobotlarni yangilash</b> — raqamlar eski bo\'lsa.\n🔁 <b>Bonusni qayta</b> — bonus hisobi Tirox balansiga mos kelmasa.\n🔁 <b>Kunlikni qayta yozish</b> — kunlik raqamlar yo\'q yoki noto\'g\'ri bo\'lsa (sekinroq).\nTartib: Tekshirib tuzatish → Rejani yoqish → Hisobotlarni yangilash → kerak bo\'lsa qolganlari. Natija botga xabar bo\'lib keladi.'],
+  ['⚠️ Muhim qoidalar', '• Cashback va «Hammaga» push — jonli ishlaydi, mijozlarga darhol ta\'sir qiladi. Har doim avval tasdiq oynasidagi matnni o\'qing.\n• Kalitlar (Tirox, Telegram) kodda yo\'q — faqat Apps Script «Свойства скрипта»da. Hech kimga bermang.\n• Odamlarga rolni kerak darajada bering: xodimga faqat «Xodim».\n• Tushunmagan narsangiz bo\'lsa — oldin kichik sinov (o\'zingizga push, bitta mijoz bonusi ±1) qiling.']
+];
 function qollanma() {
   BOL = 'qollanma';
   Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (x) { x.className = ''; });
-  var Q = [
-    ['Bu ilova nima uchun?', 'TIROX — rahbariyat va mas\'ul uchun nazorat ilovasi. Savdo va bonuslar hisobotini ko\'rasiz, xatolarni topasiz, kassirlar ishini tekshirasiz, mijoz bonusini to\'g\'rilaysiz va odamlarni boshqarasiz. Push va qo\'ng\'iroqlar CM bazadan qilinadi — bu yerda faqat natijasi ko\'rinadi.'],
-    ['📊 Hisobot', 'Tepada kechagi 4 ta asosiy raqam: savdo, cheklar, o\'rtacha chek, mijozlar. ▲ yashil — oldingi shunday kundan yaxshi, ▼ qizil — yomon. «Davrlar» tugmalari: kecha, shu hafta, o\'tgan hafta, shu oy, o\'tgan oy, yil. Pastda 30 kunlik va 12 haftalik savdo grafigi, kuyadigan bonuslar.'],
-    ['🛡 Nazorat', '1) Tizim holati — har kuni 07:05 da tizim o\'zini tekshiradi. OK = hammasi joyida, DIQQAT = qarab qo\'ying, XATO = tuzatish kerak.\n2) Xato va kamchiliklar — oxirgi 30 kundagi barcha ogohlantirishlar.\n3) Kassirlar jadvali — har kassir bo\'yicha chek, savdo, bonus. 🟥 Qaytarish va 🟨 katta chek / qo\'lda amal — shu joylarni tekshiring, pastida misollari bor.\n4) Tuzatish tugmalari — biror narsa ishlamay qolsa bosing, natija botga keladi.'],
-    ['📞 Qo\'ng\'iroq', 'CM bazadagi qo\'ng\'iroq natijalari: gaplashildi, kelaman dedi, kelmayman dedi va h.k. Kecha / 7 kun / 30 kun bo\'yicha, har xodim nechta qo\'ng\'iroq qilgani.'],
-    ['🔍 Mijozlar', 'Hamma mijozlar Tirox\'dagidek ro\'yxat bo\'lib chiqadi (yangisi tepada). Qidirish: telefon yoki ism. Mijozni bossangiz, uning kartasi ochiladi: balans, karta, tarix (nima olgan/sarflagan), kuyadigan bonus, push va Tirox\'dagi barcha ma\'lumot. Bonus ± shu karta ichida, faqat egada: miqdor va sababni yozing, tasdiqlang.'],
-    ['💰 Cashback', 'Tirox\'dagi cashback darajalari (foiz) va happy hours (vaqt bo\'yicha ko\'paytirgich) shu yerda ko\'rinadi. Hozircha faqat ko\'rish; o\'zgartirish keyingi bosqichda qo\'shiladi.'],
-    ['📊 Davr va grafik', 'Hisobotda tepada davrni tanlang: Bugun, Kecha, 7 kun, 4 hafta, 6 oy, 12 oy, Oy boshidan yoki «Davr…» — xohlagan sanadan sanagacha. Bitta kun tanlansa soatlar bo\'yicha, ko\'p kun bo\'lsa kunlar (juda uzun bo\'lsa haftalar) bo\'yicha ustunli grafik chiqadi; ustunni bossangiz aniq summa chiqadi. Bugun har 5 daqiqada yangilanadi, «Hozir yangilash» darhol yangilaydi.'],
-    ['📣 Push', 'Tirox va CM bazadan ketgan hamma push shu yerda. Ega bu yerdan xohlagan matnni bitta mijozga yoki hammaga yuboradi (xohlasa keyingi vaqtga rejalaydi). Hammaga yuborish ikki marta tasdiqlanadi.'],
-    ['👥 Odamlar', 'Yangi odam botni ochib /start bosadi → so\'rovi shu yerda chiqadi → rolni tanlaysiz. Rolni o\'zgartirish yoki o\'chirish ham shu yerda. Ega — hammasi; Rahbariyat — faqat ko\'radi; Admin — ko\'radi, tuzatadi, xodim qo\'shadi; Xodim — mijoz qidirish.'],
-    ['Fonda nima ishlaydi?', 'Ilova yopiq bo\'lsa ham: har 10 daqiqada reja tekshiriladi, 07:00 da Tirox\'dan ma\'lumot yoziladi, bonus va nazorat hisoblanadi, xato bo\'lsa botga xabar keladi. Hisobot har soatda oldindan tayyorlanadi — ilova tez ochiladi.'],
-    ['⟳ va ❔ tugmalari', '⟳ — eski saqlangan raqamlarni o\'chirib, yangisini oladi. ❔ — shu qo\'llanma. Raqamlar ustida «N daqiqa oldin» — ma\'lumot qachon olingani.'],
-    ['Muammo bo\'lsa', 'Ilova ochilmasa — botda /start bosing va «📱 Ilova» ni qayta oching. «Ruxsat yo\'q» chiqsa — ega sizni Odamlar bo\'limida qo\'shmagan. Raqam noto\'g\'ri bo\'lsa — Nazorat → «🔧 Tekshirib tuzatish».']
-  ];
-  qoy('<h3>Qo\'llanma</h3>' + Q.map(function (x, i) { return '<details' + (i === 0 ? ' open' : '') + '><summary>' + e(x[0]) + '</summary><p>' + e(x[1]).replace(/\n/g, '<br>') + '</p></details>'; }).join(''));
+  window.scrollTo(0, 0);
+  qoy('<h3>📖 Qo\'llanma</h3><div class="oq">Bo\'limni bosing — ochiladi. «Nima buzilsa» — eng pastda.</div>' + QL.map(function (x, i) { return '<details' + (i === 0 ? ' open' : '') + '><summary>' + x[0] + '</summary><p>' + x[1].replace(/\n/g, '<br>') + '</p></details>'; }).join(''));
 }
 
 // ---------- boshlash ----------
