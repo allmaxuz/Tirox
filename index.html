@@ -48,6 +48,7 @@ nav button.on{color:var(--y);font-weight:800;box-shadow:inset 0 3px 0 var(--y)}
 .yangi{font-size:11px;color:#A7F3D0;text-align:right;margin:2px 4px}
 details{background:#fff;border-radius:14px;margin-bottom:8px;padding:10px 14px}summary{font-weight:700;cursor:pointer}details p,details li{color:#374151;line-height:1.5}
 pre{white-space:pre-wrap;font-family:inherit;margin:0;font-size:14px;line-height:1.5}
+.mq{cursor:pointer}.mq:active{opacity:.7}details.karta summary{cursor:pointer;list-style:none}details.karta[open] summary{margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -81,11 +82,11 @@ function qoy(h) { document.getElementById('m').innerHTML = h; }
 function vaqt(v) { if (!v) return ''; var m = Math.round((Date.now() - v) / 60000); return '<div class="yangi">' + (m < 1 ? 'hozirgina yangilandi' : m + ' daqiqa oldin') + '</div>'; }
 function bor(h) { return MEN && MEN.huquq.indexOf(h) >= 0; }
 
-var BOLIM = [['hisobot', '📊', 'Hisobot', 'hisobot'], ['nazorat', '🛡', 'Nazorat', 'tizim'], ['qongiroq', '📞', 'Qo\'ng\'iroq', 'qongiroq'], ['mijoz', '🔍', 'Mijoz', 'mijoz'], ['odamlar', '👥', 'Odamlar', 'odamlar']];
+var BOLIM = [['hisobot', '📊', 'Hisobot', 'hisobot'], ['nazorat', '🛡', 'Nazorat', 'tizim'], ['qongiroq', '📞', 'Qo\'ng\'iroq', 'qongiroq'], ['mijoz', '🔍', 'Mijoz', 'mijoz'], ['cashback', '💰', 'Cashback', 'cashback'], ['odamlar', '👥', 'Odamlar', 'odamlar']];
 function och(b) {
   BOL = b; window.scrollTo(0, 0);
   Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (x) { x.className = x.dataset.b === b ? 'on' : ''; });
-  ({ hisobot: hisobot, nazorat: nazorat, qongiroq: qongiroq, mijoz: mijoz, odamlar: odamlar, qollanma: qollanma }[b])();
+  ({ hisobot: hisobot, nazorat: nazorat, qongiroq: qongiroq, mijoz: mijoz, cashback: cashback, odamlar: odamlar, qollanma: qollanma }[b])();
 }
 function yangila() { try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf('tx_') === 0) localStorage.removeItem(k); }); } catch (z) {} och(BOL); }
 
@@ -93,7 +94,8 @@ function yangila() { try { Object.keys(localStorage).forEach(function (k) { if (
 var HD = 0;
 function hisobot() { qoy('<div class="yuk">Yuklanmoqda…</div>'); var f = function (d, v) { hisobotChiz(d, v); }; f.bol = 'hisobot'; ol('hisobot', {}, f); bugunOl(); }
 function bugunOl() { var g = function (d, v) { hisobotChiz.b = d; if (hisobotChiz.d) hisobotChiz(hisobotChiz.d, hisobotChiz.v); }; g.bol = 'hisobot'; ol('bugun', {}, g); }
-setInterval(function () { if (BOL === 'hisobot' && !document.hidden) bugunOl(); }, 600000);
+function bugunYangi(b) { b.disabled = true; b.textContent = '⏳ Yangilanmoqda…'; api('bugun', { yangi: 1 }).then(function (d) { hisobotChiz.b = d; hisobotChiz(hisobotChiz.d, hisobotChiz.v); xabar('✅ Yangilandi: ' + d.vaqt); }).catch(function (z) { b.disabled = false; b.textContent = '⟳ Hozir yangilash'; xabar('⛔ ' + z.message); }); }
+setInterval(function () { if (BOL === 'hisobot' && !document.hidden) bugunOl(); }, 300000);
 function hisobotChiz(d, v) {
   hisobotChiz.d = d; hisobotChiz.v = v;
   var k = d.davr[0], q = k.q || {}, o = k.o || {};
@@ -106,7 +108,7 @@ function hisobotChiz(d, v) {
     ['Berilgan bonus', 'berilgan'], ['· avto', 'avto'], ['· qo\'lda qo\'shilgan', 'qolda'], ['Ishlatilgan bonus', 'ishlat'], ['· qo\'lda ayirilgan', 'ayir'], ['Kuygan bonus', 'kuygan'], ['Qaytarilgan summa', 'qaytar'], ['Yangi kartalar', 'karta']
   ].map(function (x) { return '<div class="qator"><span>' + x[0] + '</span><span>' + son(dq[x[1]]) + ' ' + (x[2] && dv.o ? foiz(dq[x[1]], dO[x[1]]) : '') + '</span></div>'; }).join('');
   var mx = Math.max.apply(null, d.kun.map(function (x) { return x[1]; })) || 1, mh = Math.max.apply(null, d.hafta.map(function (x) { return x[1]; })) || 1, b = d.bonus;
-  var bg = hisobotChiz.b, bk = bg ? '<h3>Bugun — ' + e(bg.sana) + ' · soat ' + e(bg.vaqt) + '</h3><div class="kpi">' + [['Savdo, so\'m', bg.savdo], ['Cheklar', bg.chek], ['O\'rtacha chek', bg.ortacha], ['Mijozlar', bg.mijoz]].map(function (x) { return '<div><small>' + x[0] + '</small><b>' + son(x[1]) + '</b></div>'; }).join('') + '</div><div class="oq" style="text-align:center">Har 10 daqiqada yangilanadi · oxirgi operatsiya ' + e(bg.oxirgi || '—') + ' · yangi mijoz ' + son(bg.yangi) + ' · berilgan bonus ' + son(bg.berilgan) + '</div>' : '';
+  var bg = hisobotChiz.b, bk = bg ? '<h3>Bugun — ' + e(bg.sana) + ' · soat ' + e(bg.vaqt) + '</h3><div class="kpi">' + [['Savdo, so\'m', bg.savdo], ['Cheklar', bg.chek], ['O\'rtacha chek', bg.ortacha], ['Mijozlar', bg.mijoz]].map(function (x) { return '<div><small>' + x[0] + '</small><b>' + son(x[1]) + '</b></div>'; }).join('') + '</div><div class="oq" style="text-align:center">Har 5 daqiqada yangilanadi · oxirgi operatsiya ' + e(bg.oxirgi || "—") + ' · yangi mijoz ' + son(bg.yangi) + ' · berilgan bonus ' + son(bg.berilgan) + '</div><div style="text-align:center"><button class="o" onclick="bugunYangi(this)">⟳ Hozir yangilash</button></div>' : '';
   qoy(vaqt(v) + bk + '<h3>Kecha — ' + e(d.kecha) + '</h3><div class="kpi">' + kpi + '</div>' +
     '<h3>Davrlar</h3><div class="tabs">' + tabs + '</div><div class="karta"><div class="kichik">' + e(dv.oraliq) + (dv.o ? ' · ▲▼ oldingi shunday davrga nisbatan' : '') + '</div>' + qq + '</div>' +
     '<h3>Savdo — 30 kun</h3><div class="karta"><div class="bar">' + d.kun.map(function (x) { return '<i title="' + x[0] + ': ' + son(x[1]) + '" style="height:' + (x[1] / mx * 100) + '%"></i>'; }).join('') + '</div><div class="lbl"><span>' + d.kun[0][0] + '</span><span>' + d.kun[d.kun.length - 1][0] + '</span></div></div>' +
@@ -173,34 +175,98 @@ function qongiroq() {
 }
 
 // ---------- MIJOZ + BALANS ----------
+// ---------- MIJOZLAR: ro'yxat (Tirox'dagidek) -> mijoz kartasi ----------
+var MJ = { q: '', list: [], jami: 0, oxiri: true };
 function mijoz() {
-  qoy('<div class="karta"><input id="qidir" placeholder="Telefon yoki ism…" onkeydown="if(event.key===\'Enter\')qidir()"><button class="a" onclick="qidir()">Qidirish</button></div><div id="mj"></div>');
-  setTimeout(function () { var i = document.getElementById('qidir'); if (i) i.focus(); }, 100);
+  qoy('<div class="karta"><input id="qidir" placeholder="Telefon yoki ism bo\'yicha qidirish…" value="' + e(MJ.q) + '" onkeydown="if(event.key===\'Enter\')mQidir()"><button class="a" onclick="mQidir()">Qidirish</button>' + (MJ.q ? ' <button class="o" onclick="MJ.q=\'\';mijoz()">Tozalash</button>' : '') + '</div><div id="mj"></div>');
+  mYukla(0);
 }
-function qidir() {
-  var q = document.getElementById('qidir').value; document.getElementById('mj').innerHTML = '<div class="yuk">Qidirilmoqda…</div>';
-  api('mijoz', { q: q }).then(function (d) {
-    if (d.xato) { document.getElementById('mj').innerHTML = '<div class="karta">' + e(d.xato) + '</div>'; return; }
-    document.getElementById('mj').innerHTML = (d.jami > 10 ? '<div class="oq">Yana ' + (d.jami - 10) + ' ta topildi — aniqroq yozing</div>' : '') + (d.royxat.length ? '' : '<div class="karta">Topilmadi</div>') + d.royxat.map(function (m) {
-      return '<div class="karta"><b>' + e(m.ism) + '</b><div><a href="tel:' + e(String(m.tel).replace(/[^\d+]/g, '')) + '">📞 ' + e(m.tel) + '</a></div>' +
-        '<div class="qator"><span>Tirox balansi</span><span>' + son(m.balans) + '</span></div><div class="qator"><span>Karta</span><span>' + e(m.karta || '—') + ' ' + (m.holat ? '<span class="belgi ' + (m.holat === 'installed' ? 'b-OK' : 'b-DIQQAT') + '">' + e(m.holat) + '</span>' : '') + '</span></div>' +
-        '<div class="qator"><span>Ro\'yxatdan</span><span>' + e(m.royxat) + '</span></div>' +
-        m.kuyadi.map(function (k) { return '<div class="qator"><span>Kuyadi ' + e(k[1]) + '</span><span>' + son(k[0]) + ' (' + k[2] + ' kun)</span></div>'; }).join('') +
-        (m.push ? '<div class="qator"><span>Push</span><span>' + m.push.soni + ' marta, oxirgi ' + e(m.push.oxirgi) + '</span></div>' : '') +
-        (bor('balans') && m.karta ? '<div id="b-' + e(m.kod) + '" style="margin-top:8px"><button class="o" onclick="balansOch(\'' + e(m.kod) + '\',\'' + e(m.ism).replace(/'/g, '') + '\')">± Bonus qo\'shish / ayirish</button></div>' : '') + '</div>';
-    }).join('');
-  }).catch(function (z) { document.getElementById('mj').innerHTML = '<div class="karta">⛔ ' + e(z.message) + '</div>'; });
+function mQidir() { MJ.q = document.getElementById('qidir').value.trim(); mijoz(); }
+function mYukla(s) {
+  var el = document.getElementById('mj'); if (!el) return;
+  if (s === 0) { MJ.list = []; el.innerHTML = '<div class="yuk">Yuklanmoqda…</div>'; }
+  api('mlist', { q: MJ.q, s: s }).then(function (d) {
+    if (BOL !== 'mijoz') return;
+    if (d.xato) { el.innerHTML = '<div class="karta">' + e(d.xato) + '</div>'; return; }
+    MJ.list = MJ.list.concat(d.royxat); MJ.jami = d.jami; MJ.oxiri = d.oxiri; mChiz();
+  }).catch(function (z) { el.innerHTML = '<div class="karta">⛔ ' + e(z.message) + '</div>'; });
 }
-function balansOch(kod, ism) {
-  document.getElementById('b-' + kod).innerHTML = '<input id="bm" type="number" inputmode="numeric" placeholder="Miqdor (bonus)"><input id="bi" placeholder="Sababi (majburiy)">' +
-    '<button class="a" onclick="balans(\'' + kod + '\',\'+\',\'' + ism + '\')">+ Qo\'shish</button> <button class="x" onclick="balans(\'' + kod + '\',\'-\',\'' + ism + '\')">− Ayirish</button>';
+function mChiz() {
+  var el = document.getElementById('mj'); if (!el) return;
+  el.innerHTML = '<div class="oq">' + (MJ.q ? 'Topildi: ' : 'Hamma mijozlar: ') + son(MJ.jami) + ' ta · yangisi tepada</div>' + (MJ.list.length ? '' : '<div class="karta">Topilmadi</div>') +
+    MJ.list.map(function (m) {
+      return '<div class="karta mq" onclick="mOch(\'' + e(m.kod) + '\')"><div class="qator"><span><b>' + e(m.ism || '—') + '</b><div class="kichik">' + e(m.tel || '') + ' · ro\'yxatdan ' + e(m.royxat || '—') + '</div></span><span>' + (m.balans != null ? son(m.balans) + ' <small class="kichik">bonus</small> ' : '') + '›</span></div></div>';
+    }).join('') + (MJ.oxiri ? '' : '<button class="o" style="width:100%;padding:12px" onclick="this.disabled=true;this.textContent=\'Yuklanmoqda…\';mYukla(MJ.list.length)">Yana ko\'rsatish</button>');
+}
+function mOrqa() { if (MJ.list.length) { qoy('<div class="karta"><input id="qidir" placeholder="Telefon yoki ism bo\'yicha qidirish…" value="' + e(MJ.q) + '" onkeydown="if(event.key===\'Enter\')mQidir()"><button class="a" onclick="mQidir()">Qidirish</button></div><div id="mj"></div>'); mChiz(); } else mijoz(); }
+function mOch(kod) {
+  MJ.hamma = 0;
+  qoy('<div class="yuk">Mijoz ochilmoqda…</div>'); window.scrollTo(0, 0);
+  api('mbat', { kod: kod }).then(function (d) { if (BOL === 'mijoz') mBat(d); })
+    .catch(function (z) { qoy('<button class="o" onclick="mOrqa()">‹ Orqaga</button><div class="karta">⛔ ' + e(z.message) + '</div>'); });
+}
+function mVaqt(s) { var d = new Date(s); if (isNaN(d.getTime())) return String(s); var z = function (n) { return ('0' + n).slice(-2); }; return z(d.getDate()) + '.' + z(d.getMonth() + 1) + '.' + d.getFullYear() + (/T\d/.test(String(s)) ? ' ' + z(d.getHours()) + ':' + z(d.getMinutes()) : ''); }
+function ravon(o, pre, out) {
+  if (o === null || o === undefined || o === '') return out;
+  if (Array.isArray(o)) { if (o.every(function (x) { return x === null || typeof x !== 'object'; })) { if (o.length) out.push([pre, o.join(', ')]); } else o.forEach(function (x, i) { ravon(x, pre + ' ' + (i + 1), out); }); return out; }
+  if (typeof o === 'object') { Object.keys(o).forEach(function (k) { ravon(o[k], pre ? pre + ' › ' + k : k, out); }); return out; }
+  var v = o;
+  if (typeof o === 'boolean') v = o ? 'Ha' : 'Yo\'q';
+  else if (typeof o === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(o)) v = mVaqt(o);
+  out.push([pre, v]); return out;
+}
+function jadval(o) { var r = ravon(o, '', []); return r.length ? r.map(function (x) { return '<div class="qator"><span class="kichik">' + e(x[0]) + '</span><span style="font-weight:600">' + e(String(x[1])) + '</span></div>'; }).join('') : '<div class="kichik">Ma\'lumot yo\'q</div>'; }
+function mBat(d) {
+  MJ.d = d;
+  var kr = d.kartalar || [], jon = kr.filter(function (c) { return c.status !== 'deleted'; }), bal = 0;
+  jon.forEach(function (c) { bal += Number(c.balance && c.balance.balance) || 0; });
+  var asosiy = jon[0] || kr[0];
+  var h = '<button class="o" onclick="mOrqa()">‹ Mijozlar ro\'yxati</button>' +
+    '<div class="karta"><div style="font-size:19px;font-weight:800">' + e(d.ism || '—') + '</div><div><a href="tel:' + e(String(d.tel).replace(/[^\d+]/g, '')) + '">📞 ' + e(d.tel || '') + '</a></div>' +
+    '<div style="margin:10px 0 2px" class="kichik">Tirox balansi</div><div style="font-size:30px;font-weight:800;color:var(--y)">' + son(bal) + ' <small style="font-size:14px">bonus</small></div>' +
+    '<div class="qator"><span>Karta</span><span>' + (asosiy ? e(asosiy.id) + ' <span class="belgi ' + (asosiy.status === 'installed' ? 'b-OK' : 'b-DIQQAT') + '">' + e(asosiy.status || '') + '</span>' : '—') + '</span></div>' +
+    '<div class="qator"><span>Ro\'yxatdan</span><span>' + e(d.royxat || '—') + '</span></div>' +
+    (d.tashrif ? '<div class="qator"><span>Oxirgi tashrif (kuyish hisobi)</span><span>' + e(d.tashrif) + '</span></div>' : '') +
+    (d.qongiroq ? '<div class="qator"><span>Qo\'ng\'iroq natijasi</span><span>' + e(d.qongiroq) + '</span></div>' : '') +
+    (d.push ? '<div class="qator"><span>Push</span><span>' + d.push.soni + ' marta, oxirgi ' + e(d.push.oxirgi) + '</span></div>' : '') + '</div>';
+  if (bor('balans') && asosiy && asosiy.status !== 'deleted') {
+    h += '<h3>Bonus qo\'shish / ayirish</h3><div class="karta"><input id="bm" type="number" inputmode="numeric" placeholder="Miqdor (bonus)"><input id="bi" placeholder="Sababi (majburiy)">' +
+      '<button class="a" onclick="balans(\'' + e(d.kod) + '\',\'+\',\'' + e(d.ism).replace(/'/g, '') + '\')">+ Qo\'shish</button> <button class="x" onclick="balans(\'' + e(d.kod) + '\',\'-\',\'' + e(d.ism).replace(/'/g, '') + '\')">− Ayirish</button></div>';
+  }
+  if (d.kuyadi && d.kuyadi.length) h += '<h3>Kuyadigan bonus</h3><div class="karta">' + d.kuyadi.map(function (k) { return '<div class="qator"><span>Kuyadi ' + e(k[1]) + '</span><span>' + son(k[0]) + ' (' + k[2] + ' kun)</span></div>'; }).join('') + '</div>';
+  h += '<h3>Tarix (oxirgi ' + (d.tarix || []).length + ' ta)</h3><div class="karta">' + ((d.tarix || []).length ? d.tarix.slice(0, MJ.hamma ? 60 : 15).map(function (t) {
+    var m = Number(t[3]) || 0;
+    return '<div style="padding:7px 0;border-bottom:1px solid var(--ch)"><div class="qator" style="border:0;padding:0"><span><b>' + e(t[2]) + '</b></span><span style="color:' + (m < 0 ? 'var(--q)' : 'var(--y)') + '">' + (m ? (m > 0 ? '+' : '') + son(m) : '') + '</span></div>' +
+      '<div class="kichik">' + e(t[0]) + ' ' + e(t[1]) + (t[4] ? ' · chek ' + son(t[4]) : '') + (t[5] || t[5] === 0 ? ' · balans ' + son(t[5]) : '') + (t[6] ? ' · ' + e(t[6]) : '') + (t[7] ? ' · ' + e(t[7]) : '') + (t[8] ? ' · ' + e(t[8]) : '') + '</div></div>';
+  }).join('') + (!MJ.hamma && d.tarix.length > 15 ? '<button class="o" onclick="MJ.hamma=1;mBat(MJ.d)">Hammasini ko\'rsatish (' + d.tarix.length + ')</button>' : '') : '<div class="kichik">Yozuv topilmadi</div>') + '</div>';
+  h += '<h3>Kartalar (' + kr.length + ')</h3>' + (kr.length ? kr.map(function (c) { return '<details class="karta"><summary><b>' + e(c.id) + '</b> · ' + e(c.status || '') + ' · ' + son(c.balance && c.balance.balance) + '</summary>' + jadval(c) + '</details>'; }).join('') : '<div class="karta kichik">Karta topilmadi</div>');
+  h += '<h3>Tirox\'dagi barcha ma\'lumot</h3><div class="karta">' + (d.tirox ? jadval(d.tirox) : '<div class="kichik">Tirox mijoz ma\'lumotini bermadi (' + e(d.tiroxXato || '') + ')</div>') + '</div>';
+  qoy(h);
 }
 function balans(kod, tur, ism) {
   var m = Number(document.getElementById('bm').value), iz = document.getElementById('bi').value.trim();
   if (!(m > 0)) return xabar('Miqdorni yozing'); if (!iz) return xabar('Sababini yozing');
   var savol = ism + ': ' + (tur === '+' ? '+' : '−') + son(m) + ' bonus. Tasdiqlaysizmi?';
-  var bajar = function (ha) { if (!ha) return; xabar('⏳ Tirox\'ga yuborilmoqda…'); api('balans', { kod: kod, tur: tur, miqdor: m, izoh: iz }).then(function (d) { xabar('✅ ' + d.matn); qidir(); }).catch(function (z) { xabar('⛔ ' + z.message); }); };
+  var bajar = function (ha) { if (!ha) return; xabar('⏳ Tirox\'ga yuborilmoqda…'); api('balans', { kod: kod, tur: tur, miqdor: m, izoh: iz }).then(function (d) { xabar('✅ ' + d.matn); mOch(kod); }).catch(function (z) { xabar('⛔ ' + z.message); }); };
   if (tg && tg.showConfirm) tg.showConfirm(savol, bajar); else bajar(confirm(savol));
+}
+
+// ---------- CASHBACK (hozircha faqat ko'rish) ----------
+var KUN = ['Yak', 'Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan'];
+function cashback() { qoy('<div class="yuk">Yuklanmoqda…</div>'); var f = function (d, v) { cashbackChiz(d, v); }; f.bol = 'cashback'; ol('cashback', {}, f); }
+function cashbackChiz(d, v) {
+  var R = d.ranges || [], H = d.happy || [];
+  var h = vaqt(v) + '<div class="karta"><div style="font-size:18px;font-weight:800">' + e(d.nom || 'Karta shabloni') + '</div><div class="kichik">Shablon ' + e(d.id) + ' · turi: ' + e(d.tur || '—') + '</div></div>' +
+    '<h3>Cashback darajalari</h3><div class="karta">' + (R.length ? R.map(function (r) {
+      return '<div class="qator"><span><b>' + e(r.name || '—') + '</b><div class="kichik">' + (Number(r.threshold) ? son(r.threshold) + ' so\'mdan' : 'boshlang\'ich daraja') + '</div></span><span style="font-size:20px;color:var(--y)">' + e(r.cashbackPercent == null ? '—' : r.cashbackPercent) + '%</span></div>'; }).join('') : '<div class="kichik">Daraja topilmadi</div>') + '</div>' +
+    '<h3>Happy hours (vaqt bo\'yicha)</h3><div class="karta">' + (H.length ? H.map(function (x) {
+      var kn = (x.daysOfWeek && x.daysOfWeek.length && x.daysOfWeek.length < 7) ? x.daysOfWeek.map(function (k) { return KUN[k]; }).join(', ') : 'Har kuni';
+      var m = Number(x.multiplier) || 0;
+      var nat = R.length && m ? '<div class="kichik">Shu vaqtda: ' + R.map(function (r) { return e(r.name || '') + ' ' + (Math.round((Number(r.cashbackPercent) || 0) * m * 100) / 100) + '%'; }).join(' · ') + '</div>' : '';
+      return '<div class="qator"><span><b>' + e(x.from || '') + ' – ' + e(x.till || '') + '</b><div class="kichik">' + e(kn) + '</div></span><span>× ' + e(x.multiplier) + '</span></div>' + nat; }).join('') : '<div class="kichik">Happy hours yo\'q</div>') + '</div>' +
+    '<div class="oq" style="text-align:center">Hozircha faqat ko\'rish. «× 1.5» — shu vaqtda cashback 1.5 baravar bo\'ladi. O\'zgartirish keyingi bosqichda.</div>' +
+    '<details class="karta"><summary><b>Tirox\'dan kelgan hamma sozlama</b></summary>' + jadval(d.hammasi) + '</details>';
+  qoy(h);
 }
 
 // ---------- ODAMLAR ----------
@@ -234,7 +300,9 @@ function qollanma() {
     ['📊 Hisobot', 'Tepada kechagi 4 ta asosiy raqam: savdo, cheklar, o\'rtacha chek, mijozlar. ▲ yashil — oldingi shunday kundan yaxshi, ▼ qizil — yomon. «Davrlar» tugmalari: kecha, shu hafta, o\'tgan hafta, shu oy, o\'tgan oy, yil. Pastda 30 kunlik va 12 haftalik savdo grafigi, kuyadigan bonuslar.'],
     ['🛡 Nazorat', '1) Tizim holati — har kuni 07:05 da tizim o\'zini tekshiradi. OK = hammasi joyida, DIQQAT = qarab qo\'ying, XATO = tuzatish kerak.\n2) Xato va kamchiliklar — oxirgi 30 kundagi barcha ogohlantirishlar.\n3) Kassirlar jadvali — har kassir bo\'yicha chek, savdo, bonus. 🟥 Qaytarish va 🟨 katta chek / qo\'lda amal — shu joylarni tekshiring, pastida misollari bor.\n4) Tuzatish tugmalari — biror narsa ishlamay qolsa bosing, natija botga keladi.'],
     ['📞 Qo\'ng\'iroq', 'CM bazadagi qo\'ng\'iroq natijalari: gaplashildi, kelaman dedi, kelmayman dedi va h.k. Kecha / 7 kun / 30 kun bo\'yicha, har xodim nechta qo\'ng\'iroq qilgani.'],
-    ['🔍 Mijoz va bonus ±', 'Telefon (kamida 5 raqam) yoki ism yozib qidiring. Balans, karta holati, kuyadigan bonus, push tarixi ko\'rinadi. «± Bonus» faqat egada: miqdor va sababni yozing → tasdiqlang → bonus Tirox\'ga darhol yoziladi. Har amal Jurnalga yoziladi.'],
+    ['🔍 Mijozlar', 'Hamma mijozlar Tirox\'dagidek ro\'yxat bo\'lib chiqadi (yangisi tepada). Qidirish: telefon yoki ism. Mijozni bossangiz, uning kartasi ochiladi: balans, karta, tarix (nima olgan/sarflagan), kuyadigan bonus, push va Tirox\'dagi barcha ma\'lumot. Bonus ± shu karta ichida, faqat egada: miqdor va sababni yozing, tasdiqlang.'],
+    ['💰 Cashback', 'Tirox\'dagi cashback darajalari (foiz) va happy hours (vaqt bo\'yicha ko\'paytirgich) shu yerda ko\'rinadi. Hozircha faqat ko\'rish; o\'zgartirish keyingi bosqichda qo\'shiladi.'],
+    ['📊 Bugun', 'Hisobot tepasida bugungi savdo har 5 daqiqada yangilanadi. «Hozir yangilash» tugmasi darhol yangi raqamni oladi.'],
     ['👥 Odamlar', 'Yangi odam botni ochib /start bosadi → so\'rovi shu yerda chiqadi → rolni tanlaysiz. Rolni o\'zgartirish yoki o\'chirish ham shu yerda. Ega — hammasi; Rahbariyat — faqat ko\'radi; Admin — ko\'radi, tuzatadi, xodim qo\'shadi; Xodim — mijoz qidirish.'],
     ['Fonda nima ishlaydi?', 'Ilova yopiq bo\'lsa ham: har 10 daqiqada reja tekshiriladi, 07:00 da Tirox\'dan ma\'lumot yoziladi, bonus va nazorat hisoblanadi, xato bo\'lsa botga xabar keladi. Hisobot har soatda oldindan tayyorlanadi — ilova tez ochiladi.'],
     ['⟳ va ❔ tugmalari', '⟳ — eski saqlangan raqamlarni o\'chirib, yangisini oladi. ❔ — shu qo\'llanma. Raqamlar ustida «N daqiqa oldin» — ma\'lumot qachon olingani.'],
