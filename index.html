@@ -58,7 +58,7 @@ pre{white-space:pre-wrap;font-family:inherit;margin:0;font-size:14px;line-height
 <script>
 // API manzili botdagi tugma havolasida keladi (?api=...). Bu faylda hech qanday kalit yo'q
 var API = new URLSearchParams(location.search).get('api') || '';
-var tg = window.Telegram && Telegram.WebApp, INIT = tg ? tg.initData : '', MEN = null, BOL = '', KESH = {};
+var tg = window.Telegram && Telegram.WebApp, INIT = (tg && tg.initData) || (function(){try{return new URLSearchParams(location.hash.slice(1)).get('tgWebAppData')||'';}catch(x){return '';}})(), MEN = null, BOL = '', KESH = {};
 if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#0B2E22'); tg.setBackgroundColor('#0B2E22'); } catch (e) {} }
 function e(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function son(x) { return x == null || x === '' ? '—' : String(Math.round(Number(x) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
@@ -242,7 +242,7 @@ function qollanma() {
 
 // ---------- boshlash ----------
 if (!INIT) {
-  qoy('<div class="karta"><b>TIROX ilovasi</b><p>Bu ilova faqat Telegram ichida ishlaydi. Botni oching va «📱 Ilova» tugmasini bosing.</p></div>');
+  qoy('<div class="karta"><b>TIROX ilovasi</b><p>Bu ilova faqat Telegram ichida ishlaydi. Botni oching va «📱 Ilova» tugmasini bosing.</p><p style="font-size:12px;color:#888">Tashxis: tg=' + (tg ? 'bor' : 'yoq') + ', platforma=' + (tg ? tg.platform : '-') + ', hash=' + location.hash.length + '</p></div>');
 } else {
   api('men').then(function (m) {
     MEN = m; document.getElementById('kim').textContent = 'ALLMAX FIX PRICE · ' + m.ism + ' · ' + (RN[m.rol] || m.rol);
