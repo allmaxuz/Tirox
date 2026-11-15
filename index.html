@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>TIROX</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--fon:#0B2E22;--fon2:#123D2E;--k:#fff;--m:#111827;--s:#6B7280;--ch:#E5E7EB;--y:#166534;--yo:#DCFCE7;--q:#B91C1C;--qo:#FEE2E2;--sa:#92400E;--sao:#FEF3C7}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--m);font-size:15px;
+  background-color:var(--fon);background-image:radial-gradient(circle at 20% 0%,#1E5A43 0,transparent 45%),radial-gradient(circle at 100% 60%,#14523B 0,transparent 40%);background-attachment:fixed}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.07;
+  background-image:repeating-linear-gradient(45deg,#fff 0 1px,transparent 1px 14px),repeating-linear-gradient(-45deg,#fff 0 1px,transparent 1px 14px)}
+header{position:sticky;top:0;z-index:5;padding:14px 16px 12px;color:#fff;display:flex;align-items:center;gap:10px;background:rgba(11,46,34,.92);backdrop-filter:blur(6px)}
+header b{font-size:20px;letter-spacing:.5px}header small{display:block;opacity:.75;font-size:12px}
+header .bosh{flex:1}header button{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:10px;padding:8px 11px;font-size:15px}
+main{position:relative;padding:12px 12px 96px;max-width:640px;margin:0 auto}
+h3{color:#BBF7D0;font-size:12.5px;letter-spacing:.8px;text-transform:uppercase;margin:18px 4px 8px}
+.karta{background:var(--k);border-radius:16px;padding:12px 14px;margin-bottom:10px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi div{background:var(--yo);border-radius:14px;padding:12px}.kpi small{color:var(--y);font-weight:600;font-size:12px}.kpi b{display:block;font-size:22px;margin:4px 0}
+.qator{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--ch)}.qator:last-child{border:0}
+.qator span:last-child{font-weight:700;text-align:right}
+.up{color:var(--y);font-size:12px;font-weight:700}.down{color:var(--q);font-size:12px;font-weight:700}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}.tabs button{white-space:nowrap;border:0;border-radius:20px;padding:8px 14px;background:rgba(255,255,255,.14);color:#fff;font-size:14px}
+.tabs button.on{background:#fff;color:var(--y);font-weight:700}
+.bar{display:flex;align-items:flex-end;gap:3px;height:110px}.bar i{flex:1;background:var(--y);border-radius:3px 3px 0 0;min-height:2px}
+.bar.t i{background:#115E59}.lbl{display:flex;justify-content:space-between;color:var(--s);font-size:11px;margin-top:4px}
+.kichik{color:var(--s);font-size:12.5px}.oq{color:#D1FAE5;font-size:12.5px;margin:4px}
+.belgi{display:inline-block;border-radius:8px;padding:2px 7px;font-size:11.5px;font-weight:700}
+.b-OK{background:var(--yo);color:var(--y)}.b-DIQQAT{background:var(--sao);color:var(--sa)}.b-XATO{background:var(--qo);color:var(--q)}
+button.a{border:0;border-radius:12px;padding:10px 14px;background:var(--y);color:#fff;font-weight:700;font-size:14px}
+button.o{border:1px solid var(--ch);border-radius:12px;padding:9px 12px;background:#fff;font-size:14px;margin:3px 4px 3px 0}
+button.x{border:1px solid #FCA5A5;color:var(--q);background:#fff;border-radius:12px;padding:9px 12px;font-size:14px;margin:3px 4px 3px 0}
+input,select{width:100%;border:1px solid var(--ch);border-radius:12px;padding:11px 12px;font-size:16px;margin-bottom:8px;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px}th{background:#0F3D2E;color:#fff;padding:7px 5px;font-weight:600;text-align:center}
+td{padding:7px 6px;border-bottom:1px solid var(--ch);text-align:center;white-space:nowrap}
+a{color:var(--y);font-weight:600;text-decoration:none}td:first-child{text-align:left;font-weight:600}
+tr.jami td{background:var(--yo);font-weight:800}tr.ort td{background:#F3F4F6;font-weight:700}
+.ogoh{background:var(--sao);color:var(--sa);font-weight:700}.yomon{background:var(--qo);color:var(--q);font-weight:700}
+.qamrov{overflow-x:auto}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;background:#fff;border-top:1px solid var(--ch);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;padding:8px 0 9px;font-size:11px;color:var(--s)}nav button em{display:block;font-style:normal;font-size:21px}
+nav button.on{color:var(--y);font-weight:800;box-shadow:inset 0 3px 0 var(--y)}
+.yuk{color:#D1FAE5;text-align:center;padding:30px 0}.xabar{position:fixed;left:12px;right:12px;bottom:78px;z-index:9;background:#111827;color:#fff;border-radius:12px;padding:12px 14px;display:none}
+.yangi{font-size:11px;color:#A7F3D0;text-align:right;margin:2px 4px}
+details{background:#fff;border-radius:14px;margin-bottom:8px;padding:10px 14px}summary{font-weight:700;cursor:pointer}details p,details li{color:#374151;line-height:1.5}
+pre{white-space:pre-wrap;font-family:inherit;margin:0;font-size:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<header><div class="bosh"><b>TIROX</b><small id="kim">ALLMAX FIX PRICE</small></div><button onclick="och('qollanma')">❔</button><button onclick="yangila()">⟳</button></header>
+<main id="m"><div class="yuk">Yuklanmoqda…</div></main>
+<div class="xabar" id="xabar"></div>
+<nav id="nav"></nav>
+<script>
+// API manzili botdagi tugma havolasida keladi (?api=...). Bu faylda hech qanday kalit yo'q
+var API = new URLSearchParams(location.search).get('api') || '';
+var tg = window.Telegram && Telegram.WebApp, INIT = tg ? tg.initData : '', MEN = null, BOL = '', KESH = {};
+if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#0B2E22'); tg.setBackgroundColor('#0B2E22'); } catch (e) {} }
+function e(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function son(x) { return x == null || x === '' ? '—' : String(Math.round(Number(x) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+function foiz(a, b) { if (!b) return ''; var z = (a - b) / Math.abs(b) * 100; return '<span class="' + (z >= 0 ? 'up' : 'down') + '">' + (z >= 0 ? '▲' : '▼') + Math.abs(z).toFixed(1).replace('.', ',') + '%</span>'; }
+function xabar(m) { var x = document.getElementById('xabar'); x.textContent = m; x.style.display = 'block'; clearTimeout(xabar.t); xabar.t = setTimeout(function () { x.style.display = 'none'; }, 3500); }
+function lsO(k) { try { return JSON.parse(localStorage.getItem('tx_' + k) || 'null'); } catch (z) { return null; } }
+function lsY(k, v) { try { localStorage.setItem('tx_' + k, JSON.stringify(v)); } catch (z) {} }
+function api(a, p) {
+  var url = API + '?api=1&a=' + encodeURIComponent(a) + '&d=' + encodeURIComponent(INIT) + '&p=' + encodeURIComponent(JSON.stringify(p || {}));
+  return fetch(url).then(function (r) { return r.json(); }).then(function (j) { if (!j.ok) throw new Error(j.xato); return j.d; });
+}
+// Avval saqlangan javobni darhol chizadi, keyin yangisini oladi
+function ol(a, p, chiz) {
+  var k = a + JSON.stringify(p || {}), eski = lsO(k);
+  if (eski) chiz(eski.d, eski.v);
+  return api(a, p).then(function (d) { lsY(k, { d: d, v: Date.now() }); if (BOL === chiz.bol) chiz(d, Date.now()); })
+    .catch(function (z) { if (!eski) qoy('<div class="karta">⛔ ' + e(z.message) + '</div>'); else xabar('⛔ ' + z.message); });
+}
+function qoy(h) { document.getElementById('m').innerHTML = h; }
+function vaqt(v) { if (!v) return ''; var m = Math.round((Date.now() - v) / 60000); return '<div class="yangi">' + (m < 1 ? 'hozirgina yangilandi' : m + ' daqiqa oldin') + '</div>'; }
+function bor(h) { return MEN && MEN.huquq.indexOf(h) >= 0; }
+
+var BOLIM = [['hisobot', '📊', 'Hisobot', 'hisobot'], ['nazorat', '🛡', 'Nazorat', 'tizim'], ['qongiroq', '📞', 'Qo\'ng\'iroq', 'qongiroq'], ['mijoz', '🔍', 'Mijoz', 'mijoz'], ['odamlar', '👥', 'Odamlar', 'odamlar']];
+function och(b) {
+  BOL = b; window.scrollTo(0, 0);
+  Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (x) { x.className = x.dataset.b === b ? 'on' : ''; });
+  ({ hisobot: hisobot, nazorat: nazorat, qongiroq: qongiroq, mijoz: mijoz, odamlar: odamlar, qollanma: qollanma }[b])();
+}
+function yangila() { try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf('tx_') === 0) localStorage.removeItem(k); }); } catch (z) {} och(BOL); }
+
+// ---------- HISOBOT ----------
+var HD = 0;
+function hisobot() { qoy('<div class="yuk">Yuklanmoqda…</div>'); var f = function (d, v) { hisobotChiz(d, v); }; f.bol = 'hisobot'; ol('hisobot', {}, f); }
+function hisobotChiz(d, v) {
+  hisobotChiz.d = d; hisobotChiz.v = v;
+  var k = d.davr[0], q = k.q || {}, o = k.o || {};
+  var kpi = [['Savdo, so\'m', 'savdo'], ['Cheklar', 'chek'], ['O\'rtacha chek', 'ortacha'], ['Mijozlar', 'mijoz']].map(function (x) {
+    return '<div><small>' + x[0] + '</small><b>' + son(q[x[1]]) + '</b>' + (k.o ? foiz(q[x[1]], o[x[1]]) : '') + '</div>'; }).join('');
+  var dv = d.davr[HD], dq = dv.q || {}, dO = dv.o || {};
+  var tabs = d.davr.map(function (x, i) { return '<button class="' + (i === HD ? 'on' : '') + '" onclick="HD=' + i + ';hisobotChiz(hisobotChiz.d,hisobotChiz.v)">' + e(x.nom) + '</button>'; }).join('');
+  var qq = dv.bosh ? '<div class="kichik">Ma\'lumot ertaga chiqadi</div>' : [
+    ['Savdo summasi', 'savdo', 1], ['Cheklar', 'chek', 1], ['O\'rtacha chek', 'ortacha', 1], ['Mijozlar', 'mijoz', 1], ['· yangi', 'yangi'], ['· qayta', 'qayta'],
+    ['Berilgan bonus', 'berilgan'], ['· avto', 'avto'], ['· qo\'lda qo\'shilgan', 'qolda'], ['Ishlatilgan bonus', 'ishlat'], ['· qo\'lda ayirilgan', 'ayir'], ['Kuygan bonus', 'kuygan'], ['Qaytarilgan summa', 'qaytar'], ['Yangi kartalar', 'karta']
+  ].map(function (x) { return '<div class="qator"><span>' + x[0] + '</span><span>' + son(dq[x[1]]) + ' ' + (x[2] && dv.o ? foiz(dq[x[1]], dO[x[1]]) : '') + '</span></div>'; }).join('');
+  var mx = Math.max.apply(null, d.kun.map(function (x) { return x[1]; })) || 1, mh = Math.max.apply(null, d.hafta.map(function (x) { return x[1]; })) || 1, b = d.bonus;
+  qoy(vaqt(v) + '<h3>Kecha — ' + e(d.kecha) + '</h3><div class="kpi">' + kpi + '</div>' +
+    '<h3>Davrlar</h3><div class="tabs">' + tabs + '</div><div class="karta"><div class="kichik">' + e(dv.oraliq) + (dv.o ? ' · ▲▼ oldingi shunday davrga nisbatan' : '') + '</div>' + qq + '</div>' +
+    '<h3>Savdo — 30 kun</h3><div class="karta"><div class="bar">' + d.kun.map(function (x) { return '<i title="' + x[0] + ': ' + son(x[1]) + '" style="height:' + (x[1] / mx * 100) + '%"></i>'; }).join('') + '</div><div class="lbl"><span>' + d.kun[0][0] + '</span><span>' + d.kun[d.kun.length - 1][0] + '</span></div></div>' +
+    '<h3>Savdo — 12 hafta</h3><div class="karta"><div class="bar t">' + d.hafta.map(function (x) { return '<i style="height:' + (x[1] / mh * 100) + '%"></i>'; }).join('') + '</div><div class="lbl"><span>' + d.hafta[0][0] + '</span><span>' + d.hafta[d.hafta.length - 1][0] + '</span></div></div>' +
+    (b ? '<h3>Bonus kuyadi</h3><div class="karta">' + [['7 kun ichida', b.k7], ['30 kun ichida', b.k30], ['90 kun ichida', b.k90], ['Muddati o\'tgan', b.otgan]].map(function (x) {
+      return '<div class="qator"><span>' + x[0] + '</span><span>' + son(x[1][0]) + ' · ' + son(x[1][1]) + ' mijoz</span></div>'; }).join('') + '</div>' : '') +
+    '<div class="oq" style="text-align:center">Oxirgi nazorat: ' + e(d.nazorat) + '</div>');
+}
+
+// ---------- NAZORAT: xatolar, kassirlar, tizim ----------
+var FK = 7;
+function nazorat() {
+  qoy('<div class="yuk">Yuklanmoqda…</div>');
+  var f = function (d, v) { nazorat.d = d; nazorat.v = v; nazoratChiz(); }; f.bol = 'nazorat'; ol('nazorat', {}, f);
+  var g = function (d) { nazorat.f = d; nazoratChiz(); }; g.bol = 'nazorat'; ol('faoliyat', { kun: FK }, g);
+}
+function nazoratChiz() {
+  var d = nazorat.d; if (!d) return;
+  var f = nazorat.f, h = vaqt(nazorat.v);
+  var nz = d.nazorat ? '<span class="belgi b-' + e(d.nazorat.holat) + '">' + e(d.nazorat.holat) + '</span> ' + e(d.nazorat.vaqt) : 'hali yo\'q';
+  h += '<h3>Tizim holati</h3><div class="karta"><div class="qator"><span>Oxirgi tekshiruv</span><span>' + nz + '</span></div>' +
+    '<div class="qator"><span>Push (bugun)</span><span>' + (d.push.yoqilgan ? 'yoqilgan · ' : 'o\'chiq · ') + son(d.push.bugun) + ' ta, xato ' + son(d.push.xato) + '</span></div>' +
+    '<details style="padding:6px 0;box-shadow:none"><summary class="kichik">Batafsil</summary><pre>' + e(d.holat) + '</pre></details></div>';
+  h += '<h3>Xato va kamchiliklar — 30 kun (' + d.xato.length + ')</h3>' + (d.xato.length ? '<div class="karta">' + d.xato.map(function (r) {
+    return '<div class="qator" style="display:block"><span class="belgi b-' + e(r[2]) + '">' + e(r[2]) + '</span> <b>' + e(r[0]) + ' · ' + e(r[1]) + '</b><div class="kichik">' + e(r[3]) + '</div></div>'; }).join('') + '</div>'
+    : '<div class="karta">✅ Xato yo\'q</div>');
+  h += '<h3>Kassirlar — kim nima qilyapti</h3><div class="tabs">' + [1, 7, 30].map(function (k) { return '<button class="' + (FK === k ? 'on' : '') + '" onclick="FK=' + k + ';nazorat()">' + (k === 1 ? 'Kecha' : k + ' kun') + '</button>'; }).join('') + '</div>';
+  if (!f) h += '<div class="yuk">Yuklanmoqda…</div>';
+  else {
+    var rows = f.xodim.map(function (o) {
+      return '<tr><td>' + e(o.kim) + '</td><td>' + son(o.chek) + '</td><td>' + son(o.savdo) + '</td><td>' + son(o.ortacha) + '</td><td>' + son(o.ber) + '</td><td>' + son(o.yech) + '</td>' +
+        '<td class="' + (o.qaytar ? 'yomon' : '') + '">' + son(o.qaytar) + '</td><td class="' + (o.katta ? 'ogoh' : '') + '">' + son(o.katta) + '</td><td class="' + (o.qolda ? 'ogoh' : '') + '">' + son(o.qolda) + '</td></tr>'; }).join('');
+    var j = f.jami, n = f.xodim.length || 1;
+    h += '<div class="karta qamrov"><div class="kichik">' + e(f.dan) + ' – ' + e(f.gacha) + '</div><table><tr><th>Kassir</th><th>Chek</th><th>Savdo</th><th>O\'rt. chek</th><th>Bonus +</th><th>Bonus −</th><th>Qaytarish</th><th>Katta chek</th><th>Qo\'lda</th></tr>' + rows +
+      '<tr class="jami"><td>JAMI</td><td>' + son(j.chek) + '</td><td>' + son(j.savdo) + '</td><td>' + son(j.chek ? j.savdo / j.chek : 0) + '</td><td>' + son(j.ber) + '</td><td>' + son(j.yech) + '</td><td>' + son(j.qaytar) + '</td><td>' + son(j.katta) + '</td><td>' + son(j.qolda) + '</td></tr>' +
+      '<tr class="ort"><td>O\'RTACHA</td><td>' + son(j.chek / n) + '</td><td>' + son(j.savdo / n) + '</td><td>—</td><td>' + son(j.ber / n) + '</td><td>' + son(j.yech / n) + '</td><td>' + son(j.qaytar / n) + '</td><td>' + son(j.katta / n) + '</td><td>' + son(j.qolda / n) + '</td></tr></table>' +
+      '<div class="kichik" style="margin-top:8px">🟥 qaytarish · 🟨 katta chek va qo\'lda amal — tekshirish kerak bo\'lishi mumkin</div></div>';
+    var mis = f.xodim.filter(function (o) { return o.misol.length; });
+    if (mis.length) h += '<div class="karta">' + mis.map(function (o) { return '<b>' + e(o.kim) + '</b>' + o.misol.map(function (m) { return '<div class="kichik">• ' + e(m) + '</div>'; }).join(''); }).join('<hr style="border:0;border-top:1px solid #eee">') + '</div>';
+  }
+  if (bor('tizimAmal')) h += '<h3>Tuzatish</h3><div class="karta">' + [['tekshir', '🔧 Tekshirib tuzatish'], ['reja', '⏰ Rejani yoqish'], ['hisobot', '📊 Hisobotlarni yangilash'], ['BONUS', '🔁 Bonusni qayta'], ['YOZISH', '🔁 Kunlikni qayta yozish']]
+    .map(function (x) { return '<button class="o" onclick="tizimAmal(\'' + x[0] + '\')">' + x[1] + '</button>'; }).join('') + '</div>';
+  h += '<h3>Oxirgi ishlar</h3><div class="karta">' + d.oxirgi.map(function (r) { return '<div class="qator" style="display:block"><span class="belgi b-' + e(r[2]) + '">' + e(r[2]) + '</span> <b>' + e(r[0]) + ' ' + e(r[1]) + '</b><div class="kichik">' + e(r[3]) + '</div></div>'; }).join('') +
+    '<div style="text-align:center;margin-top:8px"><a href="' + e(d.url) + '" target="_blank">Jadvalni ochish</a></div></div>';
+  qoy(h);
+}
+function tizimAmal(a) { xabar('⏳ Yuborildi…'); api('tizimAmal', { a: a }).then(function (d) { xabar('✅ ' + d.matn); }).catch(function (z) { xabar('⛔ ' + z.message); }); }
+
+// ---------- QO'NG'IROQ HISOBOTI (CM baza) ----------
+function qongiroq() {
+  qoy('<div class="yuk">Yuklanmoqda…</div>');
+  var f = function (d, v) {
+    var nat = d.natija, j = d.jami;
+    var t = '<table><tr><th>Natija</th><th>Kecha</th><th>7 kun</th><th>30 kun</th></tr>' + nat.map(function (x) { return '<tr><td>' + e(x.nom) + '</td><td>' + son(x.kecha) + '</td><td>' + son(x.h7) + '</td><td>' + son(x.h30) + '</td></tr>'; }).join('') +
+      '<tr class="jami"><td>JAMI</td><td>' + son(j.kecha) + '</td><td>' + son(j.h7) + '</td><td>' + son(j.h30) + '</td></tr>' +
+      '<tr class="ort"><td>O\'RTACHA (kuniga)</td><td>' + son(j.kecha) + '</td><td>' + son(j.h7 / 7) + '</td><td>' + son(j.h30 / 30) + '</td></tr></table>';
+    var nomlar = nat.map(function (x) { return x.nom; });
+    var k = d.kim.length ? '<table><tr><th>Xodim</th><th>Jami</th>' + nomlar.map(function (n) { return '<th>' + e(n) + '</th>'; }).join('') + '</tr>' + d.kim.map(function (o) {
+      return '<tr><td>' + e(o.kim) + '</td><td>' + son(o.jami) + '</td>' + nomlar.map(function (n) { return '<td>' + son(o.n[n] || 0) + '</td>'; }).join('') + '</tr>'; }).join('') + '</table>' : '<div class="kichik">Ma\'lumot yo\'q</div>';
+    qoy(vaqt(v) + '<div class="oq">Manba: ' + e(d.manba) + '</div><h3>Natijalar</h3><div class="karta qamrov">' + (nat.length ? t : '<div class="kichik">Hali qo\'ng\'iroq yozilmagan</div>') + '</div>' +
+      '<h3>Xodimlar — 7 kun</h3><div class="karta qamrov">' + k + '</div>');
+  };
+  f.bol = 'qongiroq'; ol('qongiroq', {}, f);
+}
+
+// ---------- MIJOZ + BALANS ----------
+function mijoz() {
+  qoy('<div class="karta"><input id="qidir" placeholder="Telefon yoki ism…" onkeydown="if(event.key===\'Enter\')qidir()"><button class="a" onclick="qidir()">Qidirish</button></div><div id="mj"></div>');
+  setTimeout(function () { var i = document.getElementById('qidir'); if (i) i.focus(); }, 100);
+}
+function qidir() {
+  var q = document.getElementById('qidir').value; document.getElementById('mj').innerHTML = '<div class="yuk">Qidirilmoqda…</div>';
+  api('mijoz', { q: q }).then(function (d) {
+    if (d.xato) { document.getElementById('mj').innerHTML = '<div class="karta">' + e(d.xato) + '</div>'; return; }
+    document.getElementById('mj').innerHTML = (d.jami > 10 ? '<div class="oq">Yana ' + (d.jami - 10) + ' ta topildi — aniqroq yozing</div>' : '') + (d.royxat.length ? '' : '<div class="karta">Topilmadi</div>') + d.royxat.map(function (m) {
+      return '<div class="karta"><b>' + e(m.ism) + '</b><div><a href="tel:' + e(String(m.tel).replace(/[^\d+]/g, '')) + '">📞 ' + e(m.tel) + '</a></div>' +
+        '<div class="qator"><span>Tirox balansi</span><span>' + son(m.balans) + '</span></div><div class="qator"><span>Karta</span><span>' + e(m.karta || '—') + ' ' + (m.holat ? '<span class="belgi ' + (m.holat === 'installed' ? 'b-OK' : 'b-DIQQAT') + '">' + e(m.holat) + '</span>' : '') + '</span></div>' +
+        '<div class="qator"><span>Ro\'yxatdan</span><span>' + e(m.royxat) + '</span></div>' +
+        m.kuyadi.map(function (k) { return '<div class="qator"><span>Kuyadi ' + e(k[1]) + '</span><span>' + son(k[0]) + ' (' + k[2] + ' kun)</span></div>'; }).join('') +
+        (m.push ? '<div class="qator"><span>Push</span><span>' + m.push.soni + ' marta, oxirgi ' + e(m.push.oxirgi) + '</span></div>' : '') +
+        (bor('balans') && m.karta ? '<div id="b-' + e(m.kod) + '" style="margin-top:8px"><button class="o" onclick="balansOch(\'' + e(m.kod) + '\',\'' + e(m.ism).replace(/'/g, '') + '\')">± Bonus qo\'shish / ayirish</button></div>' : '') + '</div>';
+    }).join('');
+  }).catch(function (z) { document.getElementById('mj').innerHTML = '<div class="karta">⛔ ' + e(z.message) + '</div>'; });
+}
+function balansOch(kod, ism) {
+  document.getElementById('b-' + kod).innerHTML = '<input id="bm" type="number" inputmode="numeric" placeholder="Miqdor (bonus)"><input id="bi" placeholder="Sababi (majburiy)">' +
+    '<button class="a" onclick="balans(\'' + kod + '\',\'+\',\'' + ism + '\')">+ Qo\'shish</button> <button class="x" onclick="balans(\'' + kod + '\',\'-\',\'' + ism + '\')">− Ayirish</button>';
+}
+function balans(kod, tur, ism) {
+  var m = Number(document.getElementById('bm').value), iz = document.getElementById('bi').value.trim();
+  if (!(m > 0)) return xabar('Miqdorni yozing'); if (!iz) return xabar('Sababini yozing');
+  var savol = ism + ': ' + (tur === '+' ? '+' : '−') + son(m) + ' bonus. Tasdiqlaysizmi?';
+  var bajar = function (ha) { if (!ha) return; xabar('⏳ Tirox\'ga yuborilmoqda…'); api('balans', { kod: kod, tur: tur, miqdor: m, izoh: iz }).then(function (d) { xabar('✅ ' + d.matn); qidir(); }).catch(function (z) { xabar('⛔ ' + z.message); }); };
+  if (tg && tg.showConfirm) tg.showConfirm(savol, bajar); else bajar(confirm(savol));
+}
+
+// ---------- ODAMLAR ----------
+var RN = { ega: '👑 Ega', rahbar: '🏛 Rahbariyat', admin: '👤 Admin', xodim: '🧑‍💼 Xodim' };
+function odamlar() {
+  qoy('<div class="yuk">Yuklanmoqda…</div>');
+  api('odamlar').then(function (d) {
+    var tug = function (id, joriy) { return d.mumkin.filter(function (r) { return r !== joriy; }).map(function (r) { return '<button class="o" onclick="odam(\'' + id + '\',\'' + r + '\')">' + RN[r] + '</button>'; }).join(''); };
+    var h = '<h3>Yangi so\'rovlar (' + d.sorov.length + ')</h3>' + (d.sorov.length ? d.sorov.map(function (s) {
+      return '<div class="karta"><b>' + e(s.ism) + '</b> ' + e(s.user) + '<div class="kichik">ID ' + e(s.id) + ' · ' + e(s.sana) + '</div><div style="margin-top:6px">' + tug(s.id, '') + '<button class="x" onclick="odam(\'' + s.id + '\',\'rad\')">Rad etish</button></div></div>'; }).join('')
+      : '<div class="karta kichik">Yangi odam qo\'shish: u botni ochib <b>/start</b> bossin — so\'rovi shu yerda chiqadi.</div>');
+    h += '<h3>Ro\'yxat (' + d.royxat.length + ')</h3>' + d.royxat.map(function (a) {
+      var ozgar = a.rol !== 'ega' && a.id !== d.men && d.mumkin.indexOf(a.rol) >= 0;
+      return '<div class="karta"><b>' + e(a.ism) + '</b> ' + e(a.user) + '<div class="kichik">' + RN[a.rol] + '</div>' + (ozgar ? '<div style="margin-top:6px">' + tug(a.id, a.rol) + '<button class="x" onclick="odam(\'' + a.id + '\',\'ochir\')">O\'chirish</button></div>' : '') + '</div>'; }).join('');
+    h += '<div class="karta kichik">👑 Ega — hammasi, bonus ±, odam qo\'shish<br>🏛 Rahbariyat — hamma hisobot va nazoratni ko\'radi, o\'zgartirmaydi<br>👤 Admin — ko\'radi, tizimni tuzatadi, xodim qo\'shadi<br>🧑‍💼 Xodim — faqat mijoz qidirish</div>';
+    qoy(h);
+  }).catch(function (z) { qoy('<div class="karta">⛔ ' + e(z.message) + '</div>'); });
+}
+function odam(id, amal) {
+  var bajar = function (ha) { if (!ha) return; api('odamAmal', { id: id, amal: amal }).then(function (d) { xabar('✅ ' + d.matn); odamlar(); }).catch(function (z) { xabar('⛔ ' + z.message); }); };
+  var s = amal === 'ochir' ? 'Bu odam o\'chirilsinmi?' : amal === 'rad' ? 'So\'rov rad etilsinmi?' : RN[amal] + ' qilinsinmi?';
+  if (tg && tg.showConfirm) tg.showConfirm(s, bajar); else bajar(confirm(s));
+}
+
+// ---------- QO'LLANMA ----------
+function qollanma() {
+  BOL = 'qollanma';
+  Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (x) { x.className = ''; });
+  var Q = [
+    ['Bu ilova nima uchun?', 'TIROX — rahbariyat va mas\'ul uchun nazorat ilovasi. Savdo va bonuslar hisobotini ko\'rasiz, xatolarni topasiz, kassirlar ishini tekshirasiz, mijoz bonusini to\'g\'rilaysiz va odamlarni boshqarasiz. Push va qo\'ng\'iroqlar CM bazadan qilinadi — bu yerda faqat natijasi ko\'rinadi.'],
+    ['📊 Hisobot', 'Tepada kechagi 4 ta asosiy raqam: savdo, cheklar, o\'rtacha chek, mijozlar. ▲ yashil — oldingi shunday kundan yaxshi, ▼ qizil — yomon. «Davrlar» tugmalari: kecha, shu hafta, o\'tgan hafta, shu oy, o\'tgan oy, yil. Pastda 30 kunlik va 12 haftalik savdo grafigi, kuyadigan bonuslar.'],
+    ['🛡 Nazorat', '1) Tizim holati — har kuni 07:05 da tizim o\'zini tekshiradi. OK = hammasi joyida, DIQQAT = qarab qo\'ying, XATO = tuzatish kerak.\n2) Xato va kamchiliklar — oxirgi 30 kundagi barcha ogohlantirishlar.\n3) Kassirlar jadvali — har kassir bo\'yicha chek, savdo, bonus. 🟥 Qaytarish va 🟨 katta chek / qo\'lda amal — shu joylarni tekshiring, pastida misollari bor.\n4) Tuzatish tugmalari — biror narsa ishlamay qolsa bosing, natija botga keladi.'],
+    ['📞 Qo\'ng\'iroq', 'CM bazadagi qo\'ng\'iroq natijalari: gaplashildi, kelaman dedi, kelmayman dedi va h.k. Kecha / 7 kun / 30 kun bo\'yicha, har xodim nechta qo\'ng\'iroq qilgani.'],
+    ['🔍 Mijoz va bonus ±', 'Telefon (kamida 5 raqam) yoki ism yozib qidiring. Balans, karta holati, kuyadigan bonus, push tarixi ko\'rinadi. «± Bonus» faqat egada: miqdor va sababni yozing → tasdiqlang → bonus Tirox\'ga darhol yoziladi. Har amal Jurnalga yoziladi.'],
+    ['👥 Odamlar', 'Yangi odam botni ochib /start bosadi → so\'rovi shu yerda chiqadi → rolni tanlaysiz. Rolni o\'zgartirish yoki o\'chirish ham shu yerda. Ega — hammasi; Rahbariyat — faqat ko\'radi; Admin — ko\'radi, tuzatadi, xodim qo\'shadi; Xodim — mijoz qidirish.'],
+    ['Fonda nima ishlaydi?', 'Ilova yopiq bo\'lsa ham: har 10 daqiqada reja tekshiriladi, 07:00 da Tirox\'dan ma\'lumot yoziladi, bonus va nazorat hisoblanadi, xato bo\'lsa botga xabar keladi. Hisobot har soatda oldindan tayyorlanadi — ilova tez ochiladi.'],
+    ['⟳ va ❔ tugmalari', '⟳ — eski saqlangan raqamlarni o\'chirib, yangisini oladi. ❔ — shu qo\'llanma. Raqamlar ustida «N daqiqa oldin» — ma\'lumot qachon olingani.'],
+    ['Muammo bo\'lsa', 'Ilova ochilmasa — botda /start bosing va «📱 Ilova» ni qayta oching. «Ruxsat yo\'q» chiqsa — ega sizni Odamlar bo\'limida qo\'shmagan. Raqam noto\'g\'ri bo\'lsa — Nazorat → «🔧 Tekshirib tuzatish».']
+  ];
+  qoy('<h3>Qo\'llanma</h3>' + Q.map(function (x, i) { return '<details' + (i === 0 ? ' open' : '') + '><summary>' + e(x[0]) + '</summary><p>' + e(x[1]).replace(/\n/g, '<br>') + '</p></details>'; }).join(''));
+}
+
+// ---------- boshlash ----------
+if (!INIT) {
+  qoy('<div class="karta"><b>TIROX ilovasi</b><p>Bu ilova faqat Telegram ichida ishlaydi. Botni oching va «📱 Ilova» tugmasini bosing.</p></div>');
+} else {
+  api('men').then(function (m) {
+    MEN = m; document.getElementById('kim').textContent = 'ALLMAX FIX PRICE · ' + m.ism + ' · ' + (RN[m.rol] || m.rol);
+    var b = BOLIM.filter(function (x) { return bor(x[3]); });
+    document.getElementById('nav').innerHTML = b.map(function (x) { return '<button data-b="' + x[0] + '" onclick="och(\'' + x[0] + '\')"><em>' + x[1] + '</em>' + x[2] + '</button>'; }).join('');
+    och(b.length ? b[0][0] : 'qollanma');
+  }).catch(function (z) { qoy('<div class="karta">⛔ ' + e(z.message) + '</div>'); });
+}
+</script>
+</body>
+</html>
