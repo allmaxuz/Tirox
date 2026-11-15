@@ -91,7 +91,9 @@ function yangila() { try { Object.keys(localStorage).forEach(function (k) { if (
 
 // ---------- HISOBOT ----------
 var HD = 0;
-function hisobot() { qoy('<div class="yuk">Yuklanmoqda…</div>'); var f = function (d, v) { hisobotChiz(d, v); }; f.bol = 'hisobot'; ol('hisobot', {}, f); }
+function hisobot() { qoy('<div class="yuk">Yuklanmoqda…</div>'); var f = function (d, v) { hisobotChiz(d, v); }; f.bol = 'hisobot'; ol('hisobot', {}, f); bugunOl(); }
+function bugunOl() { var g = function (d, v) { hisobotChiz.b = d; if (hisobotChiz.d) hisobotChiz(hisobotChiz.d, hisobotChiz.v); }; g.bol = 'hisobot'; ol('bugun', {}, g); }
+setInterval(function () { if (BOL === 'hisobot' && !document.hidden) bugunOl(); }, 600000);
 function hisobotChiz(d, v) {
   hisobotChiz.d = d; hisobotChiz.v = v;
   var k = d.davr[0], q = k.q || {}, o = k.o || {};
@@ -104,7 +106,8 @@ function hisobotChiz(d, v) {
     ['Berilgan bonus', 'berilgan'], ['· avto', 'avto'], ['· qo\'lda qo\'shilgan', 'qolda'], ['Ishlatilgan bonus', 'ishlat'], ['· qo\'lda ayirilgan', 'ayir'], ['Kuygan bonus', 'kuygan'], ['Qaytarilgan summa', 'qaytar'], ['Yangi kartalar', 'karta']
   ].map(function (x) { return '<div class="qator"><span>' + x[0] + '</span><span>' + son(dq[x[1]]) + ' ' + (x[2] && dv.o ? foiz(dq[x[1]], dO[x[1]]) : '') + '</span></div>'; }).join('');
   var mx = Math.max.apply(null, d.kun.map(function (x) { return x[1]; })) || 1, mh = Math.max.apply(null, d.hafta.map(function (x) { return x[1]; })) || 1, b = d.bonus;
-  qoy(vaqt(v) + '<h3>Kecha — ' + e(d.kecha) + '</h3><div class="kpi">' + kpi + '</div>' +
+  var bg = hisobotChiz.b, bk = bg ? '<h3>Bugun — ' + e(bg.sana) + ' · soat ' + e(bg.vaqt) + '</h3><div class="kpi">' + [['Savdo, so\'m', bg.savdo], ['Cheklar', bg.chek], ['O\'rtacha chek', bg.ortacha], ['Mijozlar', bg.mijoz]].map(function (x) { return '<div><small>' + x[0] + '</small><b>' + son(x[1]) + '</b></div>'; }).join('') + '</div><div class="oq" style="text-align:center">Har 10 daqiqada yangilanadi · oxirgi operatsiya ' + e(bg.oxirgi || '—') + ' · yangi mijoz ' + son(bg.yangi) + ' · berilgan bonus ' + son(bg.berilgan) + '</div>' : '';
+  qoy(vaqt(v) + bk + '<h3>Kecha — ' + e(d.kecha) + '</h3><div class="kpi">' + kpi + '</div>' +
     '<h3>Davrlar</h3><div class="tabs">' + tabs + '</div><div class="karta"><div class="kichik">' + e(dv.oraliq) + (dv.o ? ' · ▲▼ oldingi shunday davrga nisbatan' : '') + '</div>' + qq + '</div>' +
     '<h3>Savdo — 30 kun</h3><div class="karta"><div class="bar">' + d.kun.map(function (x) { return '<i title="' + x[0] + ': ' + son(x[1]) + '" style="height:' + (x[1] / mx * 100) + '%"></i>'; }).join('') + '</div><div class="lbl"><span>' + d.kun[0][0] + '</span><span>' + d.kun[d.kun.length - 1][0] + '</span></div></div>' +
     '<h3>Savdo — 12 hafta</h3><div class="karta"><div class="bar t">' + d.hafta.map(function (x) { return '<i style="height:' + (x[1] / mh * 100) + '%"></i>'; }).join('') + '</div><div class="lbl"><span>' + d.hafta[0][0] + '</span><span>' + d.hafta[d.hafta.length - 1][0] + '</span></div></div>' +
