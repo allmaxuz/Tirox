@@ -110,6 +110,28 @@ function hsYukla(yangi) {
 function hsDavr(i) { HS.i = i; HS.sel = -1; if (DAVR[i][1] === -2) { if (!HS.a) { HS.a = tk(6); HS.b = tk(0); } hisobotChiz(); return; } HS.d = null; qoy('<div class="yuk">Yuklanmoqda…</div>'); hsYukla(false); }
 function hsKo() { var a = document.getElementById('da').value, b = document.getElementById('db').value; if (!a || !b) return xabar('Ikkala sanani tanlang'); HS.a = a; HS.b = b; HS.d = null; qoy('<div class="yuk">Yuklanmoqda…</div>'); hsYukla(false); }
 setInterval(function () { if (BOL === 'hisobot' && !document.hidden && HS.d && HS.d.b === HS.d.bugun) hsYukla(false); }, 300000);
+
+// Mijoz bo'limi: har 60 soniyada Tirox'dan so'raydi — yangi mijoz yoki o'zgarish bo'lsa darhol chiqaradi
+setInterval(function () {
+  if (BOL !== 'mijoz' || document.hidden) return;
+  if (MJ.ochiq) {
+    var a = document.activeElement, yoz = (document.getElementById('bm') || {}).value || (document.getElementById('bi') || {}).value;
+    if (yoz || (a && a.tagName === 'INPUT')) return;
+    api('mbat', { kod: MJ.ochiq }).then(function (d) {
+      if (BOL !== 'mijoz' || !MJ.ochiq || d.kod !== MJ.ochiq) return;
+      var eski = MJ.d ? JSON.stringify([MJ.d.tarix, (MJ.d.kartalar || []).map(function (c) { return c.balance; })]) : '', yangi = JSON.stringify([d.tarix, (d.kartalar || []).map(function (c) { return c.balance; })]);
+      if (eski !== yangi) { var y = window.scrollY; mBat(d); window.scrollTo(0, y); xabar('🔄 Mijoz ma\'lumoti yangilandi'); }
+    }).catch(function () {});
+  } else if (MJ.list.length && !MJ.q) {
+    api('mlist', { q: '', s: 0 }).then(function (d) {
+      if (BOL !== 'mijoz' || MJ.ochiq || MJ.q || !d.royxat || !d.royxat.length) return;
+      var yangi = d.royxat.filter(function (x) { return !MJ.list.some(function (y) { return y.kod === x.kod; }); });
+      if (!yangi.length && d.jami === MJ.jami) return;
+      MJ.list = d.royxat.concat(MJ.list.slice(d.royxat.length).filter(function (y) { return !d.royxat.some(function (x) { return x.kod === y.kod; }); })); MJ.jami = d.jami; mChiz();
+      if (yangi.length) xabar('🆕 Yangi mijoz: ' + yangi.map(function (x) { return x.ism || x.tel; }).slice(0, 3).join(', '));
+    }).catch(function () {});
+  }
+}, 60000);
 function qisqa(x) { x = Number(x) || 0; if (x >= 1e6) return (x / 1e6).toFixed(1).replace(/\.0$/, '') + 'M'; if (x >= 1e3) return Math.round(x / 1e3) + 'k'; return String(Math.round(x)); }
 function chiroyMax(m) { if (m <= 0) return 1; var p = Math.pow(10, Math.floor(Math.log(m) / Math.LN10)), z = m / p; return (z <= 1 ? 1 : z <= 2 ? 2 : z <= 5 ? 5 : 10) * p; }
 var GN = ['Savdo, so\'m', 'Cheklar', 'Berilgan bonus'];
@@ -246,9 +268,9 @@ function mChiz() {
       return '<div class="karta mq" onclick="mOch(\'' + e(m.kod) + '\')"><div class="qator"><span><b>' + e(m.ism || '—') + '</b><div class="kichik">' + e(m.tel || '') + ' · ro\'yxatdan ' + e(m.royxat || '—') + '</div></span><span>' + (m.balans != null ? son(m.balans) + ' <small class="kichik">bonus</small> ' : '') + '›</span></div></div>';
     }).join('') + (MJ.oxiri ? '' : '<button class="o" style="width:100%;padding:12px" onclick="this.disabled=true;this.textContent=\'Yuklanmoqda…\';mYukla(MJ.list.length)">Yana ko\'rsatish</button>');
 }
-function mOrqa() { if (MJ.list.length) { qoy('<div class="karta"><input id="qidir" placeholder="Telefon yoki ism bo\'yicha qidirish…" value="' + e(MJ.q) + '" onkeydown="if(event.key===\'Enter\')mQidir()"><button class="a" onclick="mQidir()">Qidirish</button></div><div id="mj"></div>'); mChiz(); } else mijoz(); }
+function mOrqa() { MJ.ochiq = ''; if (MJ.list.length) { qoy('<div class="karta"><input id="qidir" placeholder="Telefon yoki ism bo\'yicha qidirish…" value="' + e(MJ.q) + '" onkeydown="if(event.key===\'Enter\')mQidir()"><button class="a" onclick="mQidir()">Qidirish</button></div><div id="mj"></div>'); mChiz(); } else mijoz(); }
 function mOch(kod) {
-  MJ.hamma = 0;
+  MJ.hamma = 0; MJ.ochiq = kod;
   qoy('<div class="yuk">Mijoz ochilmoqda…</div>'); window.scrollTo(0, 0);
   api('mbat', { kod: kod }).then(function (d) { if (BOL === 'mijoz') mBat(d); })
     .catch(function (z) { qoy('<button class="o" onclick="mOrqa()">‹ Orqaga</button><div class="karta">⛔ ' + e(z.message) + '</div>'); });
@@ -264,6 +286,31 @@ function ravon(o, pre, out) {
   out.push([pre, v]); return out;
 }
 function jadval(o) { var r = ravon(o, '', []); return r.length ? r.map(function (x) { return '<div class="qator"><span class="kichik">' + e(x[0]) + '</span><span style="font-weight:600">' + e(String(x[1])) + '</span></div>'; }).join('') : '<div class="kichik">Ma\'lumot yo\'q</div>'; }
+var TUR = { 'Visit logged': ['🛒', 'Xarid', 0], 'Points earned': ['➕', 'Bonus berildi', 1], 'Points redeemed': ['➖', 'Bonus ishlatildi', -1], 'Point expired': ['🔥', 'Bonus kuydi', -1], 'Refund of amount spent': ['↩️', 'Qaytarish', -1], 'Card installed': ['📲', 'Karta o\'rnatildi', 0], 'Card deleted from device': ['🗑', 'Karta telefondan o\'chirildi', 0], 'Transaction amount': ['🧾', 'Chek summasi', 0] };
+var MANBA = { scanner: 'skaner', auto: 'avtomatik', manual: 'qo\'lda', api: 'API' };
+function tKalit(t) { var p = String(t[0]).split('.'); return (p[2] || '') + (p[1] || '') + (p[0] || '') + String(t[1] || ''); }
+function tarixChiz(tar) {
+  var q = tar.slice().sort(function (a, b) { return tKalit(b) < tKalit(a) ? -1 : tKalit(b) > tKalit(a) ? 1 : 0; });
+  var kor = MJ.hamma ? 60 : 20, h = '<h3>Tarix (oxirgi ' + q.length + ' ta amal)</h3><div class="karta">';
+  if (!q.length) return h + '<div class="kichik">Yozuv topilmadi</div></div>';
+  var kun = '';
+  q.slice(0, kor).forEach(function (t) {
+    var tur = TUR[t[2]] || ['•', t[2] || '—', 0], miq = Math.abs(Number(t[3]) || 0), chek = Number(t[4]) || 0, bal = t[5];
+    if (t[0] !== kun) { kun = t[0]; h += '<div class="kichik" style="font-weight:700;margin:8px 0 2px">' + e(kun) + '</div>'; }
+    var o = [];
+    if (t[2] === 'Visit logged' && chek > 0) o.push('chek ' + son(chek) + ' so\'m');
+    if (t[2] === 'Refund of amount spent' && chek > 0) o.push('qaytarilgan chek ' + son(chek) + ' so\'m');
+    if (bal || bal === 0) o.push('balans ' + son(bal));
+    if (t[6]) o.push(MANBA[t[6]] || e(t[6]));
+    if (t[7]) o.push(e(t[7]));
+    if (t[8] && t[8] !== 'jonli') o.push(e(t[8]));
+    var rang = tur[2] > 0 ? 'var(--y)' : tur[2] < 0 ? 'var(--q)' : 'inherit', bel = tur[2] > 0 ? '+' : tur[2] < 0 ? '−' : '';
+    h += '<div style="padding:7px 0;border-bottom:1px solid var(--ch)"><div class="qator" style="border:0;padding:0"><span><b>' + tur[0] + ' ' + e(tur[1]) + '</b> <span class="kichik">' + e(t[1]) + (t[8] === 'jonli' ? ' · jonli' : '') + '</span></span><span style="color:' + rang + ';font-weight:700">' + (miq ? bel + son(miq) : (t[2] === 'Visit logged' && chek > 0 ? son(chek) : '')) + '</span></div>' +
+      (o.length ? '<div class="kichik">' + o.join(' · ') + '</div>' : '') + '</div>';
+  });
+  if (!MJ.hamma && q.length > kor) h += '<button class="o" onclick="MJ.hamma=1;mBat(MJ.d)">Hammasini ko\'rsatish (' + q.length + ')</button>';
+  return h + '</div>';
+}
 function mBat(d) {
   MJ.d = d;
   var kr = d.kartalar || [], jon = kr.filter(function (c) { return c.status !== 'deleted'; }), bal = 0;
@@ -282,11 +329,7 @@ function mBat(d) {
       '<button class="a" onclick="balans(\'' + e(d.kod) + '\',\'+\',\'' + e(d.ism).replace(/'/g, '') + '\')">+ Qo\'shish</button> <button class="x" onclick="balans(\'' + e(d.kod) + '\',\'-\',\'' + e(d.ism).replace(/'/g, '') + '\')">− Ayirish</button></div>';
   }
   if (d.kuyadi && d.kuyadi.length) h += '<h3>Kuyadigan bonus</h3><div class="karta">' + d.kuyadi.map(function (k) { return '<div class="qator"><span>Kuyadi ' + e(k[1]) + '</span><span>' + son(k[0]) + ' (' + k[2] + ' kun)</span></div>'; }).join('') + '</div>';
-  h += '<h3>Tarix (oxirgi ' + (d.tarix || []).length + ' ta)</h3><div class="karta">' + ((d.tarix || []).length ? d.tarix.slice(0, MJ.hamma ? 60 : 15).map(function (t) {
-    var m = Number(t[3]) || 0;
-    return '<div style="padding:7px 0;border-bottom:1px solid var(--ch)"><div class="qator" style="border:0;padding:0"><span><b>' + e(t[2]) + '</b></span><span style="color:' + (m < 0 ? 'var(--q)' : 'var(--y)') + '">' + (m ? (m > 0 ? '+' : '') + son(m) : '') + '</span></div>' +
-      '<div class="kichik">' + e(t[0]) + ' ' + e(t[1]) + (t[4] ? ' · chek ' + son(t[4]) : '') + (t[5] || t[5] === 0 ? ' · balans ' + son(t[5]) : '') + (t[6] ? ' · ' + e(t[6]) : '') + (t[7] ? ' · ' + e(t[7]) : '') + (t[8] ? ' · ' + e(t[8]) : '') + '</div></div>';
-  }).join('') + (!MJ.hamma && d.tarix.length > 15 ? '<button class="o" onclick="MJ.hamma=1;mBat(MJ.d)">Hammasini ko\'rsatish (' + d.tarix.length + ')</button>' : '') : '<div class="kichik">Yozuv topilmadi</div>') + '</div>';
+  h += tarixChiz(d.tarix || []);
   h += '<h3>Kartalar (' + kr.length + ')</h3>' + (kr.length ? kr.map(function (c) { return '<details class="karta"><summary><b>' + e(c.id) + '</b> · ' + e(c.status || '') + ' · ' + son(c.balance && c.balance.balance) + '</summary>' + jadval(c) + '</details>'; }).join('') : '<div class="karta kichik">Karta topilmadi</div>');
   h += '<h3>Tirox\'dagi barcha ma\'lumot</h3><div class="karta">' + (d.tirox ? jadval(d.tirox) : '<div class="kichik">Tirox mijoz ma\'lumotini bermadi (' + e(d.tiroxXato || '') + ')</div>') + '</div>';
   qoy(h);
