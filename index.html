@@ -291,6 +291,7 @@ var MANBA = { scanner: 'skaner', auto: 'avtomatik', manual: 'qo\'lda', api: 'API
 function tKalit(t) { var p = String(t[0]).split('.'); return (p[2] || '') + (p[1] || '') + (p[0] || '') + String(t[1] || ''); }
 function tarixChiz(tar) {
   var q = tar.slice().sort(function (a, b) { return tKalit(b) < tKalit(a) ? -1 : tKalit(b) > tKalit(a) ? 1 : 0; });
+  q = q.filter(function (t) { return t[2] !== 'Transaction amount'; });
   var kor = MJ.hamma ? 60 : 20, h = '<h3>Tarix (oxirgi ' + q.length + ' ta amal)</h3><div class="karta">';
   if (!q.length) return h + '<div class="kichik">Yozuv topilmadi</div></div>';
   var kun = '';
@@ -300,12 +301,12 @@ function tarixChiz(tar) {
     var o = [];
     if (t[2] === 'Visit logged' && chek > 0) o.push('chek ' + son(chek) + ' so\'m');
     if (t[2] === 'Refund of amount spent' && chek > 0) o.push('qaytarilgan chek ' + son(chek) + ' so\'m');
-    if (bal || bal === 0) o.push('balans ' + son(bal));
+    if ((tur[2] !== 0 || t[2] === 'Points earned') && (bal || bal === 0)) o.push('balans ' + son(bal));
     if (t[6]) o.push(MANBA[t[6]] || e(t[6]));
     if (t[7]) o.push(e(t[7]));
     if (t[8] && t[8] !== 'jonli') o.push(e(t[8]));
     var rang = tur[2] > 0 ? 'var(--y)' : tur[2] < 0 ? 'var(--q)' : 'inherit', bel = tur[2] > 0 ? '+' : tur[2] < 0 ? '−' : '';
-    h += '<div style="padding:7px 0;border-bottom:1px solid var(--ch)"><div class="qator" style="border:0;padding:0"><span><b>' + tur[0] + ' ' + e(tur[1]) + '</b> <span class="kichik">' + e(t[1]) + (t[8] === 'jonli' ? ' · jonli' : '') + '</span></span><span style="color:' + rang + ';font-weight:700">' + (miq ? bel + son(miq) : (t[2] === 'Visit logged' && chek > 0 ? son(chek) : '')) + '</span></div>' +
+    h += '<div style="padding:7px 0;border-bottom:1px solid var(--ch)"><div class="qator" style="border:0;padding:0"><span><b>' + tur[0] + ' ' + e(tur[1]) + '</b> <span class="kichik">' + e(t[1]) + (t[8] === 'jonli' ? ' · jonli' : '') + '</span></span><span style="color:' + rang + ';font-weight:700">' + (t[2] === 'Visit logged' ? (chek > 0 ? son(chek) : '') : miq ? bel + son(miq) : '') + '</span></div>' +
       (o.length ? '<div class="kichik">' + o.join(' · ') + '</div>' : '') + '</div>';
   });
   if (!MJ.hamma && q.length > kor) h += '<button class="o" onclick="MJ.hamma=1;mBat(MJ.d)">Hammasini ko\'rsatish (' + q.length + ')</button>';
