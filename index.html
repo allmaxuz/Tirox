@@ -329,7 +329,7 @@ function mBat(d) {
     h += '<h3>Bonus qo\'shish / ayirish</h3><div class="karta"><input id="bm" type="number" inputmode="numeric" placeholder="Miqdor (bonus)"><input id="bi" placeholder="Sababi (majburiy)">' +
       '<button class="a" onclick="balans(\'' + e(d.kod) + '\',\'+\',\'' + e(d.ism).replace(/'/g, '') + '\')">+ Qo\'shish</button> <button class="x" onclick="balans(\'' + e(d.kod) + '\',\'-\',\'' + e(d.ism).replace(/'/g, '') + '\')">− Ayirish</button></div>';
   }
-  if (d.kuyadi && d.kuyadi.length) h += '<h3>Kuyadigan bonus</h3><div class="karta">' + d.kuyadi.map(function (k) { return '<div class="qator"><span>Kuyadi ' + e(k[1]) + '</span><span>' + son(k[0]) + ' (' + k[2] + ' kun)</span></div>'; }).join('') + '</div>';
+  if (d.kuyadi && d.kuyadi.length) h += '<h3>Kuyadigan bonus</h3><div class="karta">' + d.kuyadi.map(function (k) { return '<div class="qator"><span>Kuyadi ' + e(k[4] || k[1]) + '</span><span>' + son(k[0]) + ' (' + k[2] + ' kun)</span></div>'; }).join('') + '</div>';
   h += tarixChiz(d.tarix || []);
   h += '<h3>Kartalar (' + kr.length + ')</h3>' + (kr.length ? kr.map(function (c) { return '<details class="karta"><summary><b>' + e(c.id) + '</b> · ' + e(c.status || '') + ' · ' + son(c.balance && c.balance.balance) + '</summary>' + jadval(c) + '</details>'; }).join('') : '<div class="karta kichik">Karta topilmadi</div>');
   h += '<h3>Tirox\'dagi barcha ma\'lumot</h3><div class="karta">' + (d.tirox ? jadval(d.tirox) : '<div class="kichik">Tirox mijoz ma\'lumotini bermadi (' + e(d.tiroxXato || '') + ')</div>') + '</div>';
